@@ -1,0 +1,22 @@
+PODS:
+  - carrier_info (0.0.1):
+    - Flutter
+  - Flutter (1.0.0)
+
+DEPENDENCIES:
+  - carrier_info (from `.symlinks/plugins/carrier_info/ios`)
+  - Flutter (from `Flutter`)
+
+EXTERNAL SOURCES:
+  carrier_info:
+    :path: ".symlinks/plugins/carrier_info/ios"
+  Flutter:
+    :path: Flutter
+
+SPEC CHECKSUMS:
+  carrier_info: 74da91657834617c4409e6afdb706ac4685efe66
+  Flutter: 0e3d915762c693b495b44d77113d4970485de6ec
+
+PODFILE CHECKSUM: aafe91acc616949ddb318b77800a7f51bffa2a4c
+
+COCOAPODS: 1.10.0
