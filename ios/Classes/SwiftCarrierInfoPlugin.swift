@@ -66,7 +66,7 @@ public class SwiftCarrierInfoPlugin: NSObject, FlutterPlugin {
     }
     
     public func mobileNetworkOperator(result: @escaping FlutterResult){
-        result(carrier.carrierMobileCountryCode)
+        result("")
     }
     
     public func radioType(result: @escaping FlutterResult){

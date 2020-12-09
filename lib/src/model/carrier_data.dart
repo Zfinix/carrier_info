@@ -1,3 +1,4 @@
+//Carrier Data Model
 class CarrierData {
   final bool allowsVOIP;
   final String carrierName;
