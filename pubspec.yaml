@@ -1,8 +1,7 @@
 name: carrier_info
-description: A new flutter plugin project.
-version: 0.0.1
-author:
-homepage:
+description: Carrier Info gets networkType, networkGeneration, mobileCountryCode, mobileCountryCode, e.t.c from both android and ios devices
+version: 1.0.0
+homepage: https://github.com/Zfinix/carrier_info
 
 environment:
   sdk: ">=2.7.0 <3.0.0"
