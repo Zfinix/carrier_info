@@ -1,4 +1,5 @@
 # 📱 Carrier Info
+[![pub package](https://img.shields.io/pub/v/carrier_info.svg?label=carrier_info&color=blue)](https://pub.dev/packages/carrier_info)
 
 Carrier Info gets networkType, networkGeneration, mobileCountryCode, mobileCountryCode, e.t.c from both android and ios devices. It's a port from this [js project](https://github.com/react-native-webrtc/react-native-carrier-info) and an improvement on the existing [flt_telephony_info  package](https://pub.dev/packages/flt_telephony_info).
 
