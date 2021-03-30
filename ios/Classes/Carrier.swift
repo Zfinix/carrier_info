@@ -39,7 +39,7 @@ final public class Carrier {
 
     /// Returns the name of the user’s home cellular service provider.
     public var carrierName: String? {
-        return carrier?.carrierName3
+        return carrier?.carrierName
     }
 
     /// Returns the ISO country code for the user’s cellular service provider.
