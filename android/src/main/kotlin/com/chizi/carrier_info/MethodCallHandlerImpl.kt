@@ -109,7 +109,7 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
     }
 
     private fun radioType(result: MethodChannel.Result) {
-        when (mTelephonyManager!!.radioType) {
+        when (mTelephonyManager!!.getDataNetworkType()) {
             TelephonyManager.NETWORK_TYPE_1xRTT -> result.success("1xRTT")
             TelephonyManager.NETWORK_TYPE_CDMA -> result.success("CDMA")
             TelephonyManager.NETWORK_TYPE_EDGE -> result.success("EDGE")
@@ -134,7 +134,7 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
     }
 
     private fun networkGeneration(result: MethodChannel.Result) {
-        val radioType = mTelephonyManager?.radioType
+        val radioType = mTelephonyManager?.getDataNetworkType()
         if (radioType != null) {
             when (radioType) {
                 TelephonyManager.NETWORK_TYPE_GPRS,
