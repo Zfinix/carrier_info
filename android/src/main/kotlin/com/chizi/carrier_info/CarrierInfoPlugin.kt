@@ -39,7 +39,7 @@ class CarrierInfoPlugin: FlutterPlugin,
   }
 
   override fun onDetachedFromActivityForConfigChanges() {
-    handler?.setActivity(null)
+    onDetachedFromActivity()
   }
 
   override fun onReattachedToActivityForConfigChanges(binding: ActivityPluginBinding) {
@@ -48,7 +48,7 @@ class CarrierInfoPlugin: FlutterPlugin,
   }
 
   override fun onDetachedFromActivity() {
-    onDetachedFromActivity()
+    handler?.setActivity(null)
   }
   private fun teardownChannel() {
     channel?.setMethodCallHandler(null)
