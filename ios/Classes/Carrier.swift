@@ -82,11 +82,15 @@ final public class Carrier {
             case edge = "Edge"
             case cdma = "CDMA1x"
             case lte  = "LTE"
+            case nrnsa = "NRNSA"
+            case nr = "NR"
+
 
             var generation: String {
                 switch self {
                 case .gprs, .edge, .cdma: return "2G"
                 case .lte: return "4G"
+                case .nrnsa, .nr: return "5G"
                 }
             }
         }
