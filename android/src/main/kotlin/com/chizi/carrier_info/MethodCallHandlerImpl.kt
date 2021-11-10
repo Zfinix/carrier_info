@@ -96,7 +96,7 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
     }
 
     private fun checkIfAlreadyHavePermission(): Boolean {
-        return ContextCompat.checkSelfPermission(this.activity!!, Manifest.permission.GET_ACCOUNTS) == PackageManager.PERMISSION_GRANTED
+        return ContextCompat.checkSelfPermission(this.activity!!, Manifest.permission.ACCESS_WIFI_STATE) == PackageManager.PERMISSION_GRANTED
     }
 
     private fun carrierName(result: MethodChannel.Result) {
