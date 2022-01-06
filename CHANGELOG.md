@@ -1,3 +1,6 @@
+## 2.0.4
+* Merged PRs to add 5G functionality & fix permission issue
+
 ## 2.0.3
 * Merged PRs to add 5G functionality & fix permission issue
 
