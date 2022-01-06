@@ -92,11 +92,12 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
     }
 
     private fun requestForSpecificPermission(i: Int) {
-        ActivityCompat.requestPermissions(this.activity!!, arrayOf(Manifest.permission.ACCESS_WIFI_STATE), i)
+        ActivityCompat.requestPermissions(this.activity!!, arrayOf(Manifest.permission.READ_PHONE_STATE, Manifest.permission.ACCESS_NETWORK_STATE), i)
     }
 
     private fun checkIfAlreadyHavePermission(): Boolean {
-        return ContextCompat.checkSelfPermission(this.activity!!, Manifest.permission.ACCESS_WIFI_STATE) == PackageManager.PERMISSION_GRANTED
+        return ContextCompat.checkSelfPermission(this.activity!!, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED && 
+               ContextCompat.checkSelfPermission(this.activity!!, Manifest.permission.ACCESS_NETWORK_STATE) == PackageManager.PERMISSION_GRANTED
     }
 
     private fun carrierName(result: MethodChannel.Result) {
