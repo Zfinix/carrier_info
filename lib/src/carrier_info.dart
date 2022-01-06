@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/services.dart';
@@ -43,15 +44,36 @@ class CarrierInfo {
   static Future<String?> get networkGeneration async =>
       await _channel.invokeMethod('networkGeneration');
 
+  /// The current cell id (cid)
+  static Future<int?> get cid async {
+    if (!Platform.isAndroid) {
+      return null;
+    }
+    var data = await _channel.invokeMethod('cellId');
+    var hm = jsonDecode(data);
+    return hm["cid"];
+  }
+
+  /// The current local area code
+  static Future<int?> get lac async {
+    if (!Platform.isAndroid) {
+      return null;
+    }
+    var data = await _channel.invokeMethod('cellId');
+    var hm = jsonDecode(data);
+    return hm["lac"];
+  }
+
   /// Get all carrier data from device
   static Future<CarrierData?> get all async => CarrierData(
-        allowsVOIP: await allowsVOIP,
-        carrierName: await carrierName,
-        isoCountryCode: await isoCountryCode,
-        mobileCountryCode: await mobileCountryCode,
-        mobileNetworkCode: await mobileNetworkCode,
-        mobileNetworkOperator: await mobileNetworkOperator,
-        networkGeneration: await networkGeneration,
-        radioType: await radioType,
-      );
+      allowsVOIP: await allowsVOIP,
+      carrierName: await carrierName,
+      isoCountryCode: await isoCountryCode,
+      mobileCountryCode: await mobileCountryCode,
+      mobileNetworkCode: await mobileNetworkCode,
+      mobileNetworkOperator: await mobileNetworkOperator,
+      networkGeneration: await networkGeneration,
+      radioType: await radioType,
+      cid: await cid,
+      lac: await lac);
 }

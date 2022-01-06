@@ -10,33 +10,37 @@ class CarrierData {
   final String? mobileNetworkOperator;
   final String? networkGeneration;
   final String? radioType;
+  final int? cid;
+  final int? lac;
 
-  CarrierData({
-    this.allowsVOIP = false,
-    this.carrierName,
-    this.isoCountryCode,
-    this.mobileCountryCode,
-    this.mobileNetworkCode,
-    this.mobileNetworkOperator,
-    this.networkGeneration,
-    this.radioType,
-  });
+  CarrierData(
+      {this.allowsVOIP = false,
+      this.carrierName,
+      this.isoCountryCode,
+      this.mobileCountryCode,
+      this.mobileNetworkCode,
+      this.mobileNetworkOperator,
+      this.networkGeneration,
+      this.radioType,
+      this.cid,
+      this.lac});
 
   @override
   String toString() {
-    return 'CarrierData(allowsVOIP: $allowsVOIP, carrierName: $carrierName, isoCountryCode: $isoCountryCode, mobileCountryCode: $mobileCountryCode, mobileNetworkCode: $mobileNetworkCode, mobileNetworkOperator: $mobileNetworkOperator, networkGeneration: $networkGeneration, radioType: $radioType)';
+    return 'CarrierData(allowsVOIP: $allowsVOIP, carrierName: $carrierName, isoCountryCode: $isoCountryCode, mobileCountryCode: $mobileCountryCode, mobileNetworkCode: $mobileNetworkCode, mobileNetworkOperator: $mobileNetworkOperator, networkGeneration: $networkGeneration, radioType: $radioType, cid: $cid, lac: $lac)';
   }
 
-  CarrierData copyWith({
-    bool? allowsVOIP,
-    String? carrierName,
-    String? isoCountryCode,
-    String? mobileCountryCode,
-    String? mobileNetworkCode,
-    String? mobileNetworkOperator,
-    String? networkGeneration,
-    String? radioType,
-  }) {
+  CarrierData copyWith(
+      {bool? allowsVOIP,
+      String? carrierName,
+      String? isoCountryCode,
+      String? mobileCountryCode,
+      String? mobileNetworkCode,
+      String? mobileNetworkOperator,
+      String? networkGeneration,
+      String? radioType,
+      int? cid,
+      int? lac}) {
     return CarrierData(
       allowsVOIP: allowsVOIP ?? this.allowsVOIP,
       carrierName: carrierName ?? this.carrierName,
@@ -47,6 +51,8 @@ class CarrierData {
           mobileNetworkOperator ?? this.mobileNetworkOperator,
       networkGeneration: networkGeneration ?? this.networkGeneration,
       radioType: radioType ?? this.radioType,
+      cid: cid ?? this.cid,
+      lac: lac ?? this.lac,
     );
   }
 
@@ -60,6 +66,8 @@ class CarrierData {
       'mobileNetworkOperator': mobileNetworkOperator,
       'networkGeneration': networkGeneration,
       'radioType': radioType,
+      'cid': cid,
+      'lac': lac
     };
   }
 
@@ -73,6 +81,8 @@ class CarrierData {
       mobileNetworkOperator: map['mobileNetworkOperator'],
       networkGeneration: map['networkGeneration'],
       radioType: map['radioType'],
+      cid: map['cid'],
+      lac: map['lac'],
     );
   }
 
@@ -93,7 +103,9 @@ class CarrierData {
         other.mobileNetworkCode == mobileNetworkCode &&
         other.mobileNetworkOperator == mobileNetworkOperator &&
         other.networkGeneration == networkGeneration &&
-        other.radioType == radioType;
+        other.radioType == radioType &&
+        other.cid == other.cid &&
+        other.lac == other.lac;
   }
 
   @override
@@ -105,6 +117,8 @@ class CarrierData {
         mobileNetworkCode.hashCode ^
         mobileNetworkOperator.hashCode ^
         networkGeneration.hashCode ^
-        radioType.hashCode;
+        radioType.hashCode ^
+        cid.hashCode ^
+        lac.hashCode;
   }
 }
