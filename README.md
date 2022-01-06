@@ -59,8 +59,8 @@ String carrierInfo = await CarrierInfo.mobileNetworkCode // The mobile network c
 ```
 
 - The value for this property is 'nil' if any of the following apply:
-  - There is no SIM card in the device.
-  - The device is outside of cellular service range.
+- There is no SIM card in the device.
+- The device is outside of cellular service range.
 - The value may be 'nil' on hardware prior to iPhone 4S when in Airplane mode.
 
 ### networkGeneration
