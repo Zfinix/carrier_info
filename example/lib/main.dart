@@ -102,6 +102,14 @@ class _MyAppState extends State<MyApp> {
                   title: 'Network Generation',
                   value: '${carrierInfo?.networkGeneration}',
                 ),
+                HomeItem(
+                  title: 'Cell Id (cid)',
+                  value: '${carrierInfo?.cid.toString()}',
+                ),
+                HomeItem(
+                  title: 'Local Area Code (lac)',
+                  value: '${carrierInfo?.lac.toString()}',
+                ),
               ],
             )
           ],
