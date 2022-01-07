@@ -1,7 +1,8 @@
 # 📱 Carrier Info
+
 [![pub package](https://img.shields.io/pub/v/carrier_info.svg?label=carrier_info&color=blue)](https://pub.dev/packages/carrier_info)
 
-Carrier Info gets networkType, networkGeneration, mobileCountryCode, mobileCountryCode, e.t.c from both android and ios devices. It's a port from this [js project](https://github.com/react-native-webrtc/react-native-carrier-info) and an improvement on the existing [flt_telephony_info  package](https://pub.dev/packages/flt_telephony_info).
+Carrier Info gets networkType, networkGeneration, mobileCountryCode, mobileCountryCode, e.t.c from both android and ios devices. It's a port from this [js project](https://github.com/react-native-webrtc/react-native-carrier-info) and an improvement on the existing [flt_telephony_info package](https://pub.dev/packages/flt_telephony_info).
 
 ## 📸 Screen Shots
 
@@ -75,5 +76,18 @@ String carrierInfo = await CarrierInfo.networkGeneration // 5G, 4G ... 2G
 String carrierInfo = await CarrierInfo.radioType // LTE, HSDPA, e.t.c
 ```
 
+### cid (Android only)
+
+```dart
+int carrierInfo = await CarrierInfo.cid // Cell Id, only on android for now, returns null on iPhone
+```
+
+### lac (Android only)
+
+```dart
+int carrierInfo = await CarrierInfo.lac //  Local Area Code, only on android for now, returns null on iPhone
+```
+
 ## ✨ Contribution
- Lots of PR's would be needed to make this plugin standard, as for iOS there's a permanent limitation for getting the exact data usage, there's only one way around it and it's super complex.
+
+Lots of PR's would be needed to make this plugin standard, as for iOS there's a permanent limitation for getting the exact data usage, there's only one way around it and it's super complex.

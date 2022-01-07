@@ -2,6 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'dart:async';
 import 'package:carrier_info/carrier_info.dart';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 void main() {
   runApp(MyApp());
@@ -23,6 +24,12 @@ class _MyAppState extends State<MyApp> {
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
+    // Ask for permissions before requesting data
+    await [
+      Permission.locationWhenInUse,
+      Permission.phone,
+    ].request();
+
     // Platform messages may fail, so we use a try/catch PlatformException.
     try {
       carrierInfo = await CarrierInfo.all;
