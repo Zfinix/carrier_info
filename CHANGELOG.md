@@ -1,3 +1,6 @@
+## 2.0.5-beta.2.13.0
+* Add support for Flutter 2.13.0 (Beta channel)
+
 ## 2.0.4
 * Merged PRs to add 5G functionality & fix permission issue
 
