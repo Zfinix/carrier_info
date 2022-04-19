@@ -56,8 +56,8 @@ class CarrierInfoPlugin: FlutterPlugin,
     handler = null
   }
 
-  override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>?, grantResults: IntArray?): Boolean {
-    handler?.onRequestPermissionsResult(requestCode,permissions, grantResults)
+  override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray): Boolean {
+    handler?.onRequestPermissionsResult(requestCode, permissions, grantResults)
     return true
   }
 }
