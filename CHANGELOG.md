@@ -1,5 +1,8 @@
 ## 2.0.5-beta.2.13.0
-* Add support for Flutter 2.13.0 (Beta channel)
+* Add support for Flutter 2.13.0 (Beta channel) [slightfoot](https://github.com/slightfoot)
+
+## 2.0.5
+* fix: request permissions before getting data from the app, added documentation for cid and lac  by [nicolaspernoud](https://github.com/nicolaspernoud)
 
 ## 2.0.4
 * Merged PRs to add 5G functionality & fix permission issue
