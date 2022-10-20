@@ -1,3 +1,7 @@
+## 2.0.6
+* Add support for Flutter 2.17.0 (Stable channel)
+* Syntax clean up
+
 ## 2.0.5-beta.2.13.0
 * Add support for Flutter 2.13.0 (Beta channel) [slightfoot](https://github.com/slightfoot)
 
