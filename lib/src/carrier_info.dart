@@ -2,9 +2,8 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:carrier_info/src/model/carrier_data.dart';
 import 'package:flutter/services.dart';
-
-import 'model/carrier_data.dart';
 
 class CarrierInfo {
   static const MethodChannel _channel =
@@ -15,34 +14,32 @@ class CarrierInfo {
       Platform.isAndroid ? true : await _channel.invokeMethod('allowsVOIP');
 
   /// The name of the user’s home cellular service provider.
-  static Future<String?> get carrierName async =>
-      await _channel.invokeMethod('carrierName');
+  static Future<String?> get carrierName =>
+      _channel.invokeMethod('carrierName');
 
   /// The ISO country code for the user’s cellular service provider.
-  static Future<String?> get isoCountryCode async {
-    return await _channel.invokeMethod('isoCountryCode');
-  }
+  static Future<String?> get isoCountryCode =>
+      _channel.invokeMethod('isoCountryCode');
 
   /// The mobile country code (MCC) for the user’s cellular service provider.
-  static Future<String?> get mobileCountryCode async {
-    return await _channel.invokeMethod('mobileCountryCode');
-  }
+  static Future<String?> get mobileCountryCode =>
+      _channel.invokeMethod('mobileCountryCode');
 
   /// The mobile network code (MNC) for the user’s cellular service provider.
-  static Future<String?> get mobileNetworkCode async =>
-      await _channel.invokeMethod('mobileNetworkCode');
+  static Future<String?> get mobileNetworkCode =>
+      _channel.invokeMethod('mobileNetworkCode');
 
   /// The mobile network operator code for the user’s cellular service provider.
-  static Future<String?> get mobileNetworkOperator async =>
-      await _channel.invokeMethod('mobileNetworkOperator');
+  static Future<String?> get mobileNetworkOperator =>
+      _channel.invokeMethod('mobileNetworkOperator');
 
   /// The mobile network radioType: 5G, 4G ... 2G
   static Future<String?> get radioType async =>
       await _channel.invokeMethod('radioType');
 
   /// The mobile network generation: LTE, HSDPA, e.t.c
-  static Future<String?> get networkGeneration async =>
-      await _channel.invokeMethod('networkGeneration');
+  static Future<String?> get networkGeneration =>
+      _channel.invokeMethod('networkGeneration');
 
   /// The current cell id (cid)
   static Future<int?> get cid async {
@@ -50,7 +47,7 @@ class CarrierInfo {
       return null;
     }
     var data = await _channel.invokeMethod('cellId');
-    var hm = jsonDecode(data);
+    var hm = json.decode(data);
     return hm["cid"];
   }
 
@@ -60,20 +57,21 @@ class CarrierInfo {
       return null;
     }
     var data = await _channel.invokeMethod('cellId');
-    var hm = jsonDecode(data);
+    var hm = json.decode(data);
     return hm["lac"];
   }
 
   /// Get all carrier data from device
   static Future<CarrierData?> get all async => CarrierData(
-      allowsVOIP: await allowsVOIP,
-      carrierName: await carrierName,
-      isoCountryCode: await isoCountryCode,
-      mobileCountryCode: await mobileCountryCode,
-      mobileNetworkCode: await mobileNetworkCode,
-      mobileNetworkOperator: await mobileNetworkOperator,
-      networkGeneration: await networkGeneration,
-      radioType: await radioType,
-      cid: await cid,
-      lac: await lac);
+        allowsVOIP: await allowsVOIP,
+        carrierName: await carrierName,
+        isoCountryCode: await isoCountryCode,
+        mobileCountryCode: await mobileCountryCode,
+        mobileNetworkCode: await mobileNetworkCode,
+        mobileNetworkOperator: await mobileNetworkOperator,
+        networkGeneration: await networkGeneration,
+        radioType: await radioType,
+        cid: await cid,
+        lac: await lac,
+      );
 }

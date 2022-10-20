@@ -13,34 +13,36 @@ class CarrierData {
   final int? cid;
   final int? lac;
 
-  CarrierData(
-      {this.allowsVOIP = false,
-      this.carrierName,
-      this.isoCountryCode,
-      this.mobileCountryCode,
-      this.mobileNetworkCode,
-      this.mobileNetworkOperator,
-      this.networkGeneration,
-      this.radioType,
-      this.cid,
-      this.lac});
+  const CarrierData({
+    this.allowsVOIP = false,
+    this.carrierName,
+    this.isoCountryCode,
+    this.mobileCountryCode,
+    this.mobileNetworkCode,
+    this.mobileNetworkOperator,
+    this.networkGeneration,
+    this.radioType,
+    this.cid,
+    this.lac,
+  });
 
   @override
   String toString() {
     return 'CarrierData(allowsVOIP: $allowsVOIP, carrierName: $carrierName, isoCountryCode: $isoCountryCode, mobileCountryCode: $mobileCountryCode, mobileNetworkCode: $mobileNetworkCode, mobileNetworkOperator: $mobileNetworkOperator, networkGeneration: $networkGeneration, radioType: $radioType, cid: $cid, lac: $lac)';
   }
 
-  CarrierData copyWith(
-      {bool? allowsVOIP,
-      String? carrierName,
-      String? isoCountryCode,
-      String? mobileCountryCode,
-      String? mobileNetworkCode,
-      String? mobileNetworkOperator,
-      String? networkGeneration,
-      String? radioType,
-      int? cid,
-      int? lac}) {
+  CarrierData copyWith({
+    bool? allowsVOIP,
+    String? carrierName,
+    String? isoCountryCode,
+    String? mobileCountryCode,
+    String? mobileNetworkCode,
+    String? mobileNetworkOperator,
+    String? networkGeneration,
+    String? radioType,
+    int? cid,
+    int? lac,
+  }) {
     return CarrierData(
       allowsVOIP: allowsVOIP ?? this.allowsVOIP,
       carrierName: carrierName ?? this.carrierName,
@@ -95,17 +97,7 @@ class CarrierData {
   bool operator ==(Object other) {
     if (identical(this, other)) return true;
 
-    return other is CarrierData &&
-        other.allowsVOIP == allowsVOIP &&
-        other.carrierName == carrierName &&
-        other.isoCountryCode == isoCountryCode &&
-        other.mobileCountryCode == mobileCountryCode &&
-        other.mobileNetworkCode == mobileNetworkCode &&
-        other.mobileNetworkOperator == mobileNetworkOperator &&
-        other.networkGeneration == networkGeneration &&
-        other.radioType == radioType &&
-        other.cid == other.cid &&
-        other.lac == other.lac;
+    return other is CarrierData && other.toJson() == toJson();
   }
 
   @override
