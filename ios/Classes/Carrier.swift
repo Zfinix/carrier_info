@@ -7,113 +7,132 @@
 import UIKit
 import CoreTelephony
 
+
+
+enum ShortRadioAccessTechnologyList: String {
+    case gprs = "GPRS"
+    case edge = "Edge"
+    case cdma = "CDMA1x"
+    case lte  = "LTE"
+    case nrnsa = "NRNSA"
+    case nr = "NR"
+    
+    
+    var generation: String {
+        switch self {
+        case .gprs, .edge, .cdma: return "2G"
+        case .lte: return "4G"
+        case .nrnsa, .nr: return "5G"
+        }
+    }
+}
+
 /// Wraps CTRadioAccessTechnologyDidChange notification
-public protocol CarrierDelegate: class {
+public protocol CarrierDelegate: AnyObject {
     func carrierRadioAccessTechnologyDidChange()
 }
 
+@available(iOS 12.0, *)
 final public class Carrier {
-
+    
     // MARK: - Private Properties
     private let networkInfo = CTTelephonyNetworkInfo()
-    private let carrier: CTCarrier?
+    private let planProvisioning = CTCellularPlanProvisioning()
+    private var carriers = [String : CTCarrier]()
     private var changeObserver: NSObjectProtocol!
-
+    
     public init() {
-        self.carrier = networkInfo.subscriberCellularProvider
-
+        
         changeObserver = NotificationCenter.default.addObserver(forName: NSNotification.Name.CTRadioAccessTechnologyDidChange, object: nil, queue: nil) { [unowned self](notification) in
             DispatchQueue.main.async {
                 self.delegate?.carrierRadioAccessTechnologyDidChange()
             }
         }
+        
+        if #available(iOS 12.0, *) {
+            self.carriers = networkInfo.serviceSubscriberCellularProviders ?? [:]
+            
+        } else {
+            if(networkInfo.subscriberCellularProvider != nil){
+                carriers = ["0": networkInfo.subscriberCellularProvider!]
+            }
+            
+        }
+        
+        
     }
-
+    
     deinit {
         NotificationCenter.default.removeObserver(changeObserver!)
         print(#function)
     }
-
-    // MARK: - Public Properties
+    
     public weak var delegate: CarrierDelegate?
-
-    /// Returns the name of the user’s home cellular service provider.
-    public var carrierName: String? {
-        return carrier?.carrierName
-    }
-
-    /// Returns the ISO country code for the user’s cellular service provider.
-    public var carrierIsoCountryCode: String? {
-        return carrier?.isoCountryCode
-    }
-
-    /// Returns the mobile country code (MCC) for the user’s cellular service provider.
-    public var carrierMobileCountryCode: String? {
-        return carrier?.mobileCountryCode
-    }
-
-    /// Returns the mobile network code (MNC) for the user’s cellular service provider.
-    public var carrierMobileNetworkCode: String? {
-        return carrier?.mobileNetworkCode
-    }
-
-    /// Returns true/false if the carrier allows VoIP calls to be made on its network.
-    public var carrierAllowsVOIP: Bool {
-        return carrier?.allowsVOIP ?? false
-    }
-
+    
+    
+    
     /// Returns current radio access technology type used (GPRS, Edge, LTE, etc.) with the carrier.
-    public var carrierRadioAccessTechnologyType: String? {
-        let prefix = "CTRadioAccessTechnology"
-        guard let currentTechnology = networkInfo.currentRadioAccessTechnology else {
-            return nil
-        }
-        guard currentTechnology.hasPrefix(prefix) else {
-            return currentTechnology
-        }
-        return String(currentTechnology.dropFirst(prefix.count))
-    }
-
-    /// Returns carrier network generation based on radio accesss technology type.
-    public var carrierNetworkGeneration: String? {
-
-        enum ShortRadioAccessTechnologyList: String {
-            case gprs = "GPRS"
-            case edge = "Edge"
-            case cdma = "CDMA1x"
-            case lte  = "LTE"
-            case nrnsa = "NRNSA"
-            case nr = "NR"
-
-
-            var generation: String {
-                switch self {
-                case .gprs, .edge, .cdma: return "2G"
-                case .lte: return "4G"
-                case .nrnsa, .nr: return "5G"
-                }
+    public var carrierRadioAccessTechnologyTypeList: [String?] {
+        var technologyList  =  [String]()
+        
+        if #available(iOS 12.0, *) {
+            
+            let prefix = "CTRadioAccessTechnology"
+            guard let currentTechnologies = networkInfo.serviceCurrentRadioAccessTechnology else {
+                return []
             }
+            
+            
+            for technology in currentTechnologies.values {
+                
+                if technology.hasPrefix(prefix) {
+                    technologyList.append(String(technology.dropFirst(prefix.count)))
+                    
+                }else{
+                    
+                    technologyList.append(ShortRadioAccessTechnologyList(rawValue: technology)?.generation ?? "3G")
+                    
+                }
+                
+            }
+            
         }
-
-        if let radioType = carrierRadioAccessTechnologyType {
-            let generation = ShortRadioAccessTechnologyList(rawValue: radioType)?.generation ?? "3G"
-            return generation
-
-        } else {
-            return nil
-        }
+        
+        return technologyList
+        
     }
-
+    
+    
     /// Returns all available info about the carrier.
     public var carrierInfo: [String: Any?] {
-        return [
-            "carrierName": carrierName,
-            "carrierIsoCountryCode": carrierIsoCountryCode,
-            "carrierMobileCountryCode": carrierMobileCountryCode,
-            "carrierMobileNetworkCode": carrierMobileNetworkCode,
-            "carrierAllowsVOIP": carrierAllowsVOIP,
-            "carrierRadioAccessTechnologyType": carrierRadioAccessTechnologyType,
-            "carrierNetworkGeneration": carrierNetworkGeneration,
-        ]
+        
+        var dataList =  [[String: Any?]]()
+        
+        for carr in carriers.values {
+            dataList.append([
+                "carrierName": carr.carrierName,
+                "isoCountryCode": carr.isoCountryCode,
+                "mobileCountryCode": carr.mobileCountryCode,
+                "mobileNetworkCode": carr.mobileNetworkCode,
+                "carrierAllowsVOIP": carr.allowsVOIP,
+                
+            ])
+            
+        }
+        
+       if #available(iOS 16.0, *) {
+            return [
+                "carrierData": dataList,
+                "carrierRadioAccessTechnologyTypeList": carrierRadioAccessTechnologyTypeList,
+                "supportsEmbeddedSIM": planProvisioning.supportsEmbeddedSIM,
+                "serviceCurrentRadioAccessTechnology": networkInfo.serviceCurrentRadioAccessTechnology,
+            ]
+        }else {
+            return [
+                "carrierData": dataList,
+                "carrierRadioAccessTechnologyTypeList": carrierRadioAccessTechnologyTypeList,
+                "serviceCurrentRadioAccessTechnology": networkInfo.serviceCurrentRadioAccessTechnology,
+            ]
+        }
     }
 }

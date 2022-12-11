@@ -1,4 +1,4 @@
-package com.chizi.carrier_info_example
+package com.chizi.example
 
 import io.flutter.embedding.android.FlutterActivity
 
