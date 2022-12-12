@@ -18,6 +18,6 @@ void main() {
   });
 
   test('getPlatformVersion', () async {
-    expect(await CarrierInfo.carrierName, isNotEmpty);
+    expect(await CarrierInfo.getAndroidInfo(), isNotEmpty);
   });
 }

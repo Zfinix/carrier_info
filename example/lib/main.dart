@@ -1,6 +1,9 @@
-import 'package:flutter/cupertino.dart';
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:carrier_info/carrier_info.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -14,7 +17,17 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  CarrierData carrierInfo;
+  IosCarrierData? _iosInfo;
+  IosCarrierData? get iosInfo => _iosInfo;
+  set iosInfo(IosCarrierData? iosInfo) {
+    setState(() => _iosInfo = iosInfo);
+  }
+
+  AndroidCarrierData? _androidInfo;
+  AndroidCarrierData? get androidInfo => _androidInfo;
+  set androidInfo(AndroidCarrierData? carrierInfo) {
+    setState(() => _androidInfo = carrierInfo);
+  }
 
   @override
   void initState() {
@@ -28,12 +41,13 @@ class _MyAppState extends State<MyApp> {
     await [
       Permission.locationWhenInUse,
       Permission.phone,
+      Permission.sms,
     ].request();
 
     // Platform messages may fail, so we use a try/catch PlatformException.
     try {
-      carrierInfo = await CarrierInfo.all;
-      setState(() {});
+      if (Platform.isAndroid) androidInfo = await CarrierInfo.getAndroidInfo();
+      if (Platform.isIOS) iosInfo = await CarrierInfo.getIosInfo();
     } catch (e) {
       print(e.toString());
     }
@@ -45,83 +59,183 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return CupertinoApp(
-      debugShowCheckedModeBanner: false,
-      home: CupertinoPageScaffold(
-        navigationBar: CupertinoNavigationBar(
-          middle: const Text('Carrier Info example app'),
-          border: Border.symmetric(
-            horizontal: BorderSide(
-              width: 0.5,
-              color: CupertinoColors.systemGrey2.withOpacity(0.4),
+    return Material(
+      color: Colors.transparent,
+      child: CupertinoApp(
+        debugShowCheckedModeBanner: false,
+        home: CupertinoPageScaffold(
+          navigationBar: CupertinoNavigationBar(
+            middle: const Text('Carrier Info example app'),
+            border: Border.symmetric(
+              horizontal: BorderSide(
+                width: 0.5,
+                color: CupertinoColors.systemGrey2.withOpacity(0.4),
+              ),
+            ),
+          ),
+          backgroundColor: CupertinoColors.lightBackgroundGray,
+          child: Platform.isAndroid
+              ? AndroidUI(androidInfo: androidInfo)
+              : IosUI(iosInfo: iosInfo),
+        ),
+      ),
+    );
+  }
+}
+
+class IosUI extends StatelessWidget {
+  const IosUI({
+    super.key,
+    this.iosInfo,
+  });
+
+  final IosCarrierData? iosInfo;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      children: [
+        const SizedBox(height: 20),
+        Padding(
+          padding: const EdgeInsets.all(15),
+          child: Text(
+            'CARRIER INFORMATION',
+            style: TextStyle(
+              fontSize: 15,
+              color: CupertinoColors.systemGrey,
             ),
           ),
         ),
-        backgroundColor: CupertinoColors.lightBackgroundGray,
-        child: ListView(
+        HomeItem(
+          title: 'supportsEmbeddedSIM',
+          value: '${iosInfo?.supportsEmbeddedSIM}',
+          isFirst: true,
+        ),
+        ...(iosInfo?.carrierRadioAccessTechnologyTypeList ?? []).map(
+          (it) => HomeItem(
+            title: '',
+            value: it,
+          ),
+        ),
+        ...(iosInfo?.carrierData ?? []).map(
+          (it) => Column(
+            children: [
+              const SizedBox(height: 15),
+              Text(
+                'SIM: ${it.carrierName}',
+                style: TextStyle(
+                  fontSize: 15,
+                  color: CupertinoColors.systemGrey,
+                ),
+              ),
+              const SizedBox(height: 15),
+              ...it.toMap().entries.map(
+                    (e) => HomeItem(
+                      title: e.key,
+                      value: '${e.value}',
+                    ),
+                  )
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class AndroidUI extends StatelessWidget {
+  const AndroidUI({
+    super.key,
+    this.androidInfo,
+  });
+
+  final AndroidCarrierData? androidInfo;
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      children: [
+        const SizedBox(height: 20),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(
-              height: 20,
+            Padding(
+              padding: const EdgeInsets.all(15),
+              child: Text(
+                'CARRIER INFORMATION',
+                style: TextStyle(
+                  fontSize: 15,
+                  color: CupertinoColors.systemGrey,
+                ),
+              ),
             ),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Padding(
-                  padding: const EdgeInsets.all(15),
-                  child: Text(
-                    'CARRIER INFORMATION',
+            HomeItem(
+              title: 'isVoiceCapable',
+              value: '${androidInfo?.isVoiceCapable}',
+              isFirst: true,
+            ),
+            HomeItem(
+              title: 'isSmsCapable',
+              value: '${androidInfo?.isSmsCapable}',
+            ),
+            HomeItem(
+              title: 'isMultiSimSupported',
+              value: '${androidInfo?.isMultiSimSupported}',
+            ),
+            HomeItem(
+              title: 'isDataCapable',
+              value: '${androidInfo?.isDataCapable}',
+            ),
+            HomeItem(
+              title: 'isDataEnabled',
+              value: '${androidInfo?.isDataEnabled}',
+            ),
+            ...(androidInfo?.telephonyInfo ?? []).map((it) {
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: 15),
+                child: Column(
+                  children: [
+                    Text(
+                      'SIM: ${it.phoneNumber} (from telephonyInfo)',
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: CupertinoColors.systemGrey,
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    ...(it.toMap()).entries.map(
+                          (val) => HomeItem(
+                            title: '${val.key}',
+                            value: '${val.value}',
+                          ),
+                        )
+                  ],
+                ),
+              );
+            }),
+            ...(androidInfo?.subscriptionsInfo ?? []).map((it) {
+              return Column(
+                children: [
+                  Text(
+                    'SIM: ${it.phoneNumber} (from subscriptionsInfo)',
                     style: TextStyle(
-                      fontSize: 11,
+                      fontSize: 15,
                       color: CupertinoColors.systemGrey,
                     ),
                   ),
-                ),
-                HomeItem(
-                  title: 'Name',
-                  value: carrierInfo?.carrierName,
-                  isFirst: true,
-                ),
-                HomeItem(
-                  title: 'Country Code',
-                  value: carrierInfo?.isoCountryCode,
-                ),
-                HomeItem(
-                  title: 'Mobile Country Code',
-                  value: carrierInfo?.mobileCountryCode,
-                ),
-                HomeItem(
-                  title: 'Mobile Network Operator',
-                  value: '${carrierInfo?.mobileNetworkOperator}',
-                ),
-                HomeItem(
-                  title: 'Mobile Network Code',
-                  value: '${carrierInfo?.mobileNetworkCode}',
-                ),
-                HomeItem(
-                  title: 'Allows VOIP',
-                  value: '${carrierInfo?.allowsVOIP}',
-                ),
-                HomeItem(
-                  title: 'Radio Type',
-                  value: '${carrierInfo?.radioType}',
-                ),
-                HomeItem(
-                  title: 'Network Generation',
-                  value: '${carrierInfo?.networkGeneration}',
-                ),
-                HomeItem(
-                  title: 'Cell Id (cid)',
-                  value: '${carrierInfo?.cid.toString()}',
-                ),
-                HomeItem(
-                  title: 'Local Area Code (lac)',
-                  value: '${carrierInfo?.lac.toString()}',
-                ),
-              ],
-            )
+                  const SizedBox(height: 15),
+                  ...(it.toMap()).entries.map(
+                        (val) => HomeItem(
+                          title: '${val.key}',
+                          value: '${val.value}',
+                        ),
+                      )
+                ],
+              );
+            }),
           ],
         ),
-      ),
+      ],
     );
   }
 }
@@ -129,34 +243,71 @@ class _MyAppState extends State<MyApp> {
 class HomeItem extends StatelessWidget {
   final bool isFirst;
   final String title;
-  final String value;
+  final String? value;
   const HomeItem({
-    Key key,
-    @required this.title,
+    super.key,
+    required this.title,
     this.value,
     this.isFirst = false,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return Material(
       color: Colors.white,
-      child: Column(
-        children: [
-          if (!isFirst)
-            Container(height: 0.5, color: Colors.grey.withOpacity(0.3)),
-          Padding(
-            padding: const EdgeInsets.all(15),
-            child: Row(
-              children: [
-                Text(title ?? ''),
-                Spacer(),
-                Text(value ?? ''),
-              ],
+      child: InkWell(
+        onTap: () {},
+        child: Column(
+          children: [
+            if (!isFirst)
+              Container(height: 0.5, color: Colors.grey.withOpacity(0.3)),
+            Padding(
+              padding: const EdgeInsets.all(15),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(title),
+                  Spacer(),
+                  Flexible(
+                    child: Wrap(
+                      alignment: WrapAlignment.start,
+                      crossAxisAlignment: WrapCrossAlignment.start,
+                      children: [
+                        Text(value ?? ''),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
+}
+
+String jsonPretty(dynamic _obj) {
+  String prettyprint;
+
+  var obj = _obj;
+
+  try {
+    if (_obj is String) {
+      obj = json.decode(_obj);
+    }
+
+    if (obj is Map ||
+        obj is Map<dynamic, dynamic> ||
+        obj is Map<String, dynamic>) {
+      const encoder = JsonEncoder.withIndent('  ');
+      prettyprint = encoder.convert(obj);
+    } else {
+      prettyprint = '$obj';
+    }
+  } catch (e) {
+    return _obj;
+  }
+
+  return prettyprint;
 }
