@@ -64,7 +64,6 @@ final public class Carrier {
     
     deinit {
         NotificationCenter.default.removeObserver(changeObserver!)
-        print(#function)
     }
     
     public weak var delegate: CarrierDelegate?
@@ -115,7 +114,6 @@ final public class Carrier {
                 "mobileCountryCode": carr.mobileCountryCode,
                 "mobileNetworkCode": carr.mobileNetworkCode,
                 "carrierAllowsVOIP": carr.allowsVOIP,
-                
             ])
             
         }

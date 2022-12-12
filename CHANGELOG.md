@@ -1,3 +1,7 @@
+## 2.0.7
+* Breaking changes for Multi sim supoer
+* Syntax clean up
+
 ## 2.0.6
 * Add support for Flutter 2.17.0 (Stable channel)
 * Syntax clean up

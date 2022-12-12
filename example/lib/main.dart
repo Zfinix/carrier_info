@@ -17,7 +17,11 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  dynamic iosInfo;
+  IosCarrierData? _iosInfo;
+  IosCarrierData? get iosInfo => _iosInfo;
+  set iosInfo(IosCarrierData? iosInfo) {
+    setState(() => _iosInfo = iosInfo);
+  }
 
   AndroidCarrierData? _androidInfo;
   AndroidCarrierData? get androidInfo => _androidInfo;
@@ -44,7 +48,6 @@ class _MyAppState extends State<MyApp> {
     try {
       if (Platform.isAndroid) androidInfo = await CarrierInfo.getAndroidInfo();
       if (Platform.isIOS) iosInfo = await CarrierInfo.getIosInfo();
-      setState(() {});
     } catch (e) {
       print(e.toString());
     }
@@ -56,7 +59,6 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint(jsonPretty(iosInfo));
     return Material(
       color: Colors.transparent,
       child: CupertinoApp(
