@@ -38,7 +38,10 @@ class IosCarrierData {
   factory IosCarrierData.fromMap(Map<dynamic, dynamic> map) {
     return IosCarrierData(
       carrierData: List<CarrierData>.from(
-          map['carrierData']?.map((x) => CarrierData.fromMap(x))),
+        map['carrierData']?.map(
+          (x) => CarrierData.fromMap(x),
+        ),
+      ),
       supportsEmbeddedSIM: map['supportsEmbeddedSIM'] ?? false,
       carrierRadioAccessTechnologyTypeList:
           List<String>.from(map['carrierRadioAccessTechnologyTypeList']),

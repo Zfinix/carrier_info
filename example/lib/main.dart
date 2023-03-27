@@ -278,28 +278,3 @@ class HomeItem extends StatelessWidget {
     );
   }
 }
-
-String jsonPretty(dynamic _obj) {
-  String prettyprint;
-
-  var obj = _obj;
-
-  try {
-    if (_obj is String) {
-      obj = json.decode(_obj);
-    }
-
-    if (obj is Map ||
-        obj is Map<dynamic, dynamic> ||
-        obj is Map<String, dynamic>) {
-      const encoder = JsonEncoder.withIndent('  ');
-      prettyprint = encoder.convert(obj);
-    } else {
-      prettyprint = '$obj';
-    }
-  } catch (e) {
-    return _obj;
-  }
-
-  return prettyprint;
-}
