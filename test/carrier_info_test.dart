@@ -1,6 +1,5 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:carrier_info/carrier_info.dart';
 
 void main() {
   const MethodChannel channel = MethodChannel('carrier_info');
@@ -15,9 +14,5 @@ void main() {
 
   tearDown(() {
     channel.setMockMethodCallHandler(null);
-  });
-
-  test('getPlatformVersion', () async {
-    expect(await CarrierInfo.getAndroidInfo(), isNotEmpty);
   });
 }

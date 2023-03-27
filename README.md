@@ -92,6 +92,19 @@ Docs: https://developer.android.com/reference/android/telephony/TelephonyManager
  };
 ```
 
+### Permissions
+You should add permissions that are required to your android manifest:
+
+```xml
+  <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+  <uses-permission android:name="android.permission.READ_BASIC_PHONE_STATE" />
+  <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+  <uses-permission android:name="android.permission.READ_PHONE_NUMBERS" />
+  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+  <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+  <uses-permission android:name="android.permission.READ_PRIVILEGED_PHONE_STATE" />
+```
+
 ## ✨ Contribution
 
 Lots of PR's would be needed to make this plugin standard, as for iOS there's a permanent limitation for getting the exact data usage, there's only one way around it and it's super complex.

@@ -1,5 +1,10 @@
+
+## 3.0.0
+* Breaking changes for android 10 and below as Telephony is no longer supported by them 
+* Removal of permission checking from package, you'll need to manage permission on the mobile end 
+
 ## 2.0.8
-* Breaking changes for Multi sim supoer
+* Breaking changes for Multi sim suport
 * Syntax clean up
 
 ## 2.0.6

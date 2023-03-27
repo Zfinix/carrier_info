@@ -93,7 +93,7 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
                         "simState" to simState(i),
                         "phoneNumber" to mTelephonyManager!!.line1Number,
                         "networkOperatorName" to mTelephonyManager!!.networkOperatorName,
-                        "subscriptionId" to mTelephonyManager!!.subscriptionId,
+                        "subscriptionId" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) mTelephonyManager!!.subscriptionId else null,
                         "isoCountryCode" to mTelephonyManager!!.simCountryIso,
                         "networkCountryIso" to mTelephonyManager!!.getNetworkCountryIso(i),
                         "mobileNetworkCode" to mTelephonyManager!!.simOperator?.substring(3),
