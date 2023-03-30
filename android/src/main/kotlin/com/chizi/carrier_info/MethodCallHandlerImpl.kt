@@ -32,7 +32,7 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
     private val E_NO_MOBILE_NETWORK = "no_mobile_network"
     private val E_NO_NETWORK_OPERATOR = "no_network_operator"
     private val E_NO_CELL_ID = "no_cell_id"
-    private var mTelephonyManager: TelephonyManager? = null
+    private var mDefaultTelephonyManager: TelephonyManager? = null
     private lateinit var func: () -> Unit?
 
 
@@ -44,8 +44,9 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
         this.activity = activity
         this.context = context
 
-        mTelephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
-
+        // Retrieve the default subscription's TelephonyManager used for all calls"
+        mDefaultTelephonyManager =
+            context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
     }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
@@ -55,11 +56,10 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
                     try {
                         getInfo(result)
                     } catch (e: Exception) {
-
                         result.error(E_NO_CARRIER_NAME, "No carrier name", e.toString())
-
                     }
                 }
+
                 else -> {
                     result.notImplemented()
                 }
@@ -69,14 +69,35 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
 
 
     private fun requestForSpecificPermission(i: Int) {
-        ActivityCompat.requestPermissions(this.activity!!, arrayOf(Manifest.permission.READ_PHONE_STATE, Manifest.permission.ACCESS_NETWORK_STATE, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION), i)
+        ActivityCompat.requestPermissions(
+            this.activity!!,
+            arrayOf(
+                Manifest.permission.READ_PHONE_STATE,
+                Manifest.permission.ACCESS_NETWORK_STATE,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ),
+            i
+        )
     }
 
     private fun checkIfAlreadyHavePermission(): Boolean {
-        return ContextCompat.checkSelfPermission(this.activity!!, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(this.activity!!, Manifest.permission.ACCESS_NETWORK_STATE) == PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(this.activity!!, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(this.activity!!, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        return ContextCompat.checkSelfPermission(
+            this.activity!!,
+            Manifest.permission.READ_PHONE_STATE
+        ) == PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(
+                    this.activity!!,
+                    Manifest.permission.ACCESS_NETWORK_STATE
+                ) == PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(
+                    this.activity!!,
+                    Manifest.permission.ACCESS_COARSE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED &&
+                ContextCompat.checkSelfPermission(
+                    this.activity!!,
+                    Manifest.permission.ACCESS_FINE_LOCATION
+                ) == PackageManager.PERMISSION_GRANTED
     }
 
 
@@ -84,29 +105,45 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             val telephonyList: ArrayList<HashMap<String, Any?>> = ArrayList()
-            for (i in 0 until mTelephonyManager!!.phoneCount) {
-                val data = hashMapOf<String, Any?>(
-                        "carrierName" to mTelephonyManager!!.simOperatorName,
-                        "dataActivity" to mTelephonyManager!!.dataActivity,
-                        "radioType" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) radioType() else null,
-                        "cellId" to cellId(),
-                        "simState" to simState(i),
-                        "phoneNumber" to mTelephonyManager!!.line1Number,
-                        "networkOperatorName" to mTelephonyManager!!.networkOperatorName,
-                        "subscriptionId" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) mTelephonyManager!!.subscriptionId else null,
-                        "isoCountryCode" to mTelephonyManager!!.simCountryIso,
-                        "networkCountryIso" to mTelephonyManager!!.getNetworkCountryIso(i),
-                        "mobileNetworkCode" to mTelephonyManager!!.simOperator?.substring(3),
-                        "displayName" to mTelephonyManager!!.simOperatorName,
-                        "mobileCountryCode" to mTelephonyManager!!.simOperator?.substring(0, 3),
-                        "networkGeneration" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) networkGeneration() else null,
-                )
 
-                telephonyList.add(data)
+            val modemCount =
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
+                    mDefaultTelephonyManager!!.activeModemCount
+                else
+                    mDefaultTelephonyManager!!.phoneCount
+
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                for (i in 0 until modemCount) {
+                    val telephonyManager = mDefaultTelephonyManager!!.createForSubscriptionId(i);
+
+                    val data = hashMapOf<String, Any?>(
+                        "carrierName" to telephonyManager.simOperatorName,
+                        "dataActivity" to telephonyManager.dataActivity,
+                        "radioType" to radioType(telephonyManager),
+                        "cellId" to cellId(telephonyManager),
+                        "simState" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) simState(
+                            telephonyManager
+                        ) else null,
+                        "phoneNumber" to telephonyManager.line1Number,
+                        "networkOperatorName" to telephonyManager.networkOperatorName,
+                        "subscriptionId" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) telephonyManager.subscriptionId else null,
+                        "isoCountryCode" to telephonyManager.simCountryIso,
+                        "networkCountryIso" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) telephonyManager.getNetworkCountryIso(
+                            i
+                        ) else null,
+                        "mobileNetworkCode" to telephonyManager.simOperator?.substring(3),
+                        "displayName" to telephonyManager.simOperatorName,
+                        "mobileCountryCode" to telephonyManager.simOperator?.substring(0, 3),
+                        "networkGeneration" to networkGeneration(telephonyManager),
+                    )
+
+                    telephonyList.add(data)
+                }
             }
 
             val subscriptionsList: ArrayList<HashMap<String, Any?>> = ArrayList()
-            val subsManager = context!!.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
+            val subsManager =
+                context!!.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
 
             if (subsManager.activeSubscriptionInfoList != null) {
 
@@ -114,21 +151,23 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
                     if (subsInfo != null) {
                         try {
                             val data = hashMapOf(
-                                    "simSerialNo" to subsInfo.iccId,
-                                    "mobileCountryCode" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) subsInfo.mccString else null,
-                                    "countryIso" to subsInfo.countryIso,
-                                    "mobileNetworkCode" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) subsInfo.mncString else null,
-                                    "cardId" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) subsInfo.cardId else null,
-                                    "carrierId" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) subsInfo.carrierId else null,
-                                    "dataRoaming" to subsInfo.dataRoaming,
-                                    "isEmbedded" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) subsInfo.isEmbedded else null,
-                                    "simSlotIndex" to subsInfo.simSlotIndex,
-                                    "subscriptionType" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) subsInfo.subscriptionType else null,
-                                    "isOpportunistic" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) subsInfo.isOpportunistic else null,
-                                    "displayName" to subsInfo.displayName,
-                                    "subscriptionId" to subsInfo.subscriptionId,
-                                    "phoneNumber" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) subsManager.getPhoneNumber(subsInfo.subscriptionId) else subsInfo.number,
-                                    "isNetworkRoaming" to subsManager.isNetworkRoaming(subsInfo.subscriptionId),
+                                "simSerialNo" to subsInfo.iccId,
+                                "mobileCountryCode" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) subsInfo.mccString else null,
+                                "countryIso" to subsInfo.countryIso,
+                                "mobileNetworkCode" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) subsInfo.mncString else null,
+                                "cardId" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) subsInfo.cardId else null,
+                                "carrierId" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) subsInfo.carrierId else null,
+                                "dataRoaming" to subsInfo.dataRoaming,
+                                "isEmbedded" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) subsInfo.isEmbedded else null,
+                                "simSlotIndex" to subsInfo.simSlotIndex,
+                                "subscriptionType" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) subsInfo.subscriptionType else null,
+                                "isOpportunistic" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) subsInfo.isOpportunistic else null,
+                                "displayName" to subsInfo.displayName,
+                                "subscriptionId" to subsInfo.subscriptionId,
+                                "phoneNumber" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) subsManager.getPhoneNumber(
+                                    subsInfo.subscriptionId
+                                ) else subsInfo.number,
+                                "isNetworkRoaming" to subsManager.isNetworkRoaming(subsInfo.subscriptionId),
                             )
 
                             subscriptionsList.add(data)
@@ -141,13 +180,13 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
 
             val data = hashMapOf<String, Any?>(
 
-                    "isDataEnabled" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) mTelephonyManager!!.isDataEnabled else null,
-                    "isMultiSimSupported" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) isMultiSimSupported() else null,
-                    "isDataCapable" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) mTelephonyManager!!.isDataCapable else null,
-                    "isSmsCapable" to mTelephonyManager!!.isSmsCapable,
-                    "isVoiceCapable" to mTelephonyManager!!.isVoiceCapable,
-                    "telephonyInfo" to telephonyList,
-                    "subscriptionsInfo" to subscriptionsList,
+                "isDataEnabled" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) mDefaultTelephonyManager!!.isDataEnabled else null,
+                "isMultiSimSupported" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) isMultiSimSupported() else null,
+                "isDataCapable" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) mDefaultTelephonyManager!!.isDataCapable else null,
+                "isSmsCapable" to mDefaultTelephonyManager!!.isSmsCapable,
+                "isVoiceCapable" to mDefaultTelephonyManager!!.isVoiceCapable,
+                "telephonyInfo" to telephonyList,
+                "subscriptionsInfo" to subscriptionsList,
             );
 
             result.success(data)
@@ -161,8 +200,8 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
 
 
     @RequiresApi(Build.VERSION_CODES.N)
-    private fun radioType(): String {
-        return when (mTelephonyManager!!.dataNetworkType) {
+    private fun radioType(telephonyManager: TelephonyManager): String {
+        return when (telephonyManager.dataNetworkType) {
             TelephonyManager.NETWORK_TYPE_1xRTT -> return "1xRTT"
             TelephonyManager.NETWORK_TYPE_CDMA -> return "CDMA"
             TelephonyManager.NETWORK_TYPE_EDGE -> return "EDGE"
@@ -188,8 +227,9 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
     }
 
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     private fun isMultiSimSupported(): String {
-        return when (mTelephonyManager!!.isMultiSimSupported()) {
+        return when (mDefaultTelephonyManager!!.isMultiSimSupported) {
             TelephonyManager.MULTISIM_ALLOWED -> return "MULTISIM_ALLOWED"
             TelephonyManager.MULTISIM_NOT_SUPPORTED_BY_CARRIER -> return "MULTISIM_NOT_SUPPORTED_BY_CARRIER"
             TelephonyManager.MULTISIM_NOT_SUPPORTED_BY_HARDWARE -> return "MULTISIM_NOT_SUPPORTED_BY_HARDWARE"
@@ -198,8 +238,9 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
     }
 
 
-    private fun simState(i: Int): String {
-        return when (mTelephonyManager!!.getSimState(i)) {
+    @RequiresApi(Build.VERSION_CODES.O)
+    private fun simState(telephonyManager: TelephonyManager): String {
+        return when (telephonyManager.simState) {
             TelephonyManager.SIM_STATE_ABSENT -> return "SIM_STATE_ABSENT"
             TelephonyManager.SIM_STATE_CARD_IO_ERROR -> return "SIM_STATE_CARD_IO_ERROR"
             TelephonyManager.SIM_STATE_CARD_RESTRICTED -> return "SIM_STATE_CARD_RESTRICTED"
@@ -215,42 +256,42 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
     }
 
     @RequiresApi(Build.VERSION_CODES.N)
-    private fun networkGeneration(): String {
-        val radioType = mTelephonyManager?.dataNetworkType
-        if (radioType != null) {
-            when (radioType) {
-                TelephonyManager.NETWORK_TYPE_GPRS,
-                TelephonyManager.NETWORK_TYPE_EDGE,
-                TelephonyManager.NETWORK_TYPE_CDMA,
-                TelephonyManager.NETWORK_TYPE_1xRTT,
-                TelephonyManager.NETWORK_TYPE_IDEN,
-                TelephonyManager.NETWORK_TYPE_GSM
-                -> return "2G"
-                TelephonyManager.NETWORK_TYPE_UMTS,
-                TelephonyManager.NETWORK_TYPE_EVDO_0,
-                TelephonyManager.NETWORK_TYPE_EVDO_A,
-                TelephonyManager.NETWORK_TYPE_HSDPA,
-                TelephonyManager.NETWORK_TYPE_HSUPA,
-                TelephonyManager.NETWORK_TYPE_HSPA,
-                TelephonyManager.NETWORK_TYPE_EVDO_B,
-                TelephonyManager.NETWORK_TYPE_EHRPD,
-                TelephonyManager.NETWORK_TYPE_HSPAP,
-                TelephonyManager.NETWORK_TYPE_TD_SCDMA
-                -> return "3G"
-                TelephonyManager.NETWORK_TYPE_LTE
-                -> return "4G"
-                TelephonyManager.NETWORK_TYPE_NR,
-                -> return "5G"
-                else -> radioType.toString()
-            }
+    private fun networkGeneration(telephonyManager: TelephonyManager): String {
+        when (val radioType = telephonyManager.dataNetworkType) {
+            TelephonyManager.NETWORK_TYPE_GPRS,
+            TelephonyManager.NETWORK_TYPE_EDGE,
+            TelephonyManager.NETWORK_TYPE_CDMA,
+            TelephonyManager.NETWORK_TYPE_1xRTT,
+            TelephonyManager.NETWORK_TYPE_IDEN,
+            TelephonyManager.NETWORK_TYPE_GSM
+            -> return "2G"
 
+            TelephonyManager.NETWORK_TYPE_UMTS,
+            TelephonyManager.NETWORK_TYPE_EVDO_0,
+            TelephonyManager.NETWORK_TYPE_EVDO_A,
+            TelephonyManager.NETWORK_TYPE_HSDPA,
+            TelephonyManager.NETWORK_TYPE_HSUPA,
+            TelephonyManager.NETWORK_TYPE_HSPA,
+            TelephonyManager.NETWORK_TYPE_EVDO_B,
+            TelephonyManager.NETWORK_TYPE_EHRPD,
+            TelephonyManager.NETWORK_TYPE_HSPAP,
+            TelephonyManager.NETWORK_TYPE_TD_SCDMA
+            -> return "3G"
+
+            TelephonyManager.NETWORK_TYPE_LTE
+            -> return "4G"
+
+            TelephonyManager.NETWORK_TYPE_NR,
+            -> return "5G"
+
+            else -> radioType.toString()
         }
         return "unknown"
     }
 
     // return cell id
-    private fun cellId(): HashMap<String, Any>? {
-        val location = mTelephonyManager!!.cellLocation
+    private fun cellId(telephonyManager: TelephonyManager): HashMap<String, Any>? {
+        val location = telephonyManager.cellLocation
         if (location != null) {
             var cid = -1
             var lac = -1
@@ -264,8 +305,8 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
             }
 
             return hashMapOf(
-                    "cid" to cid,
-                    "lac" to lac
+                "cid" to cid,
+                "lac" to lac
             )
 
         }
@@ -274,7 +315,11 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
     }
 
 
-    fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>?, grantResults: IntArray?) {
+    fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>?,
+        grantResults: IntArray?
+    ) {
         when (requestCode) {
             0 -> return if (grantResults!![0] == PackageManager.PERMISSION_GRANTED) {
                 this.func()!!
@@ -283,6 +328,7 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
                 requestForSpecificPermission(0)
 
             }
+
             1 -> return if (grantResults!![0] == PackageManager.PERMISSION_GRANTED) {
                 this.func()!!
 
@@ -290,6 +336,7 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
                 requestForSpecificPermission(1)
 
             }
+
             2 -> return if (grantResults!![0] == PackageManager.PERMISSION_GRANTED) {
                 this.func()!!
 
