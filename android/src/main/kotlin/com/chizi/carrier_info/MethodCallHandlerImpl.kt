@@ -8,17 +8,13 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
-import android.telephony.SubscriptionManager
-import android.telephony.TelephonyManager
-import android.telephony.cdma.CdmaCellLocation
-import android.telephony.gsm.GsmCellLocation
+import android.telephony.*
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
-import java.lang.Exception
 
 
 internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : MethodCallHandler {
@@ -105,42 +101,6 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             val telephonyList: ArrayList<HashMap<String, Any?>> = ArrayList()
-
-            val modemCount =
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R)
-                    mDefaultTelephonyManager!!.activeModemCount
-                else
-                    mDefaultTelephonyManager!!.phoneCount
-
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                for (i in 0 until modemCount) {
-                    val telephonyManager = mDefaultTelephonyManager!!.createForSubscriptionId(i);
-
-                    val data = hashMapOf<String, Any?>(
-                        "carrierName" to telephonyManager.simOperatorName,
-                        "dataActivity" to telephonyManager.dataActivity,
-                        "radioType" to radioType(telephonyManager),
-                        "cellId" to cellId(telephonyManager),
-                        "simState" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) simState(
-                            telephonyManager
-                        ) else null,
-                        "phoneNumber" to telephonyManager.line1Number,
-                        "networkOperatorName" to telephonyManager.networkOperatorName,
-                        "subscriptionId" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) telephonyManager.subscriptionId else null,
-                        "isoCountryCode" to telephonyManager.simCountryIso,
-                        "networkCountryIso" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) telephonyManager.getNetworkCountryIso(
-                            i
-                        ) else null,
-                        "mobileNetworkCode" to telephonyManager.simOperator?.substring(3),
-                        "displayName" to telephonyManager.simOperatorName,
-                        "mobileCountryCode" to telephonyManager.simOperator?.substring(0, 3),
-                        "networkGeneration" to networkGeneration(telephonyManager),
-                    )
-
-                    telephonyList.add(data)
-                }
-            }
-
             val subscriptionsList: ArrayList<HashMap<String, Any?>> = ArrayList()
             val subsManager =
                 context!!.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
@@ -152,9 +112,9 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
                         try {
                             val data = hashMapOf(
                                 "simSerialNo" to subsInfo.iccId,
-                                "mobileCountryCode" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) subsInfo.mccString else null,
+                                "mobileCountryCode" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) subsInfo.mccString else subsInfo.mcc,
                                 "countryIso" to subsInfo.countryIso,
-                                "mobileNetworkCode" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) subsInfo.mncString else null,
+                                "mobileNetworkCode" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) subsInfo.mncString else subsInfo.mnc,
                                 "cardId" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) subsInfo.cardId else null,
                                 "carrierId" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) subsInfo.carrierId else null,
                                 "dataRoaming" to subsInfo.dataRoaming,
@@ -164,9 +124,8 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
                                 "isOpportunistic" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) subsInfo.isOpportunistic else null,
                                 "displayName" to subsInfo.displayName,
                                 "subscriptionId" to subsInfo.subscriptionId,
-                                "phoneNumber" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) subsManager.getPhoneNumber(
-                                    subsInfo.subscriptionId
-                                ) else subsInfo.number,
+                                "phoneNumber" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                                    subsManager.getPhoneNumber(subsInfo.subscriptionId) else subsInfo.number,
                                 "isNetworkRoaming" to subsManager.isNetworkRoaming(subsInfo.subscriptionId),
                             )
 
@@ -174,12 +133,40 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
                         } catch (e: Exception) {
                             subscriptionsList.add(HashMap())
                         }
+
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                            val telephonyManager =
+                                mDefaultTelephonyManager!!.createForSubscriptionId(subsInfo.subscriptionId);
+
+                            val data = hashMapOf<String, Any?>(
+                                "carrierName" to telephonyManager.simOperatorName,
+                                "dataActivity" to telephonyManager.dataActivity,
+                                "radioType" to radioType(telephonyManager),
+                                "cellId" to cellId(telephonyManager, subsInfo.simSlotIndex),
+                                "simState" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) simState(
+                                    telephonyManager
+                                ) else null,
+                                "phoneNumber" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                                    subsManager.getPhoneNumber(subsInfo.subscriptionId) else subsInfo.number,
+                                "networkOperatorName" to telephonyManager.networkOperatorName,
+                                "subscriptionId" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) telephonyManager.subscriptionId else null,
+                                "isoCountryCode" to telephonyManager.simCountryIso,
+                                "networkCountryIso" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) telephonyManager.networkCountryIso else null,
+                                "mobileNetworkCode" to if (telephonyManager.simOperator?.isEmpty() == false)
+                                    telephonyManager.simOperator?.substring(3) else null,
+                                "displayName" to telephonyManager.simOperatorName,
+                                "mobileCountryCode" to if (telephonyManager.simOperator?.isEmpty() == false)
+                                    telephonyManager.simOperator?.substring(0, 3) else null,
+                                "networkGeneration" to networkGeneration(telephonyManager),
+                            )
+
+                            telephonyList.add(data)
+                        }
                     }
                 }
             }
 
             val data = hashMapOf<String, Any?>(
-
                 "isDataEnabled" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) mDefaultTelephonyManager!!.isDataEnabled else null,
                 "isMultiSimSupported" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) isMultiSimSupported() else null,
                 "isDataCapable" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) mDefaultTelephonyManager!!.isDataCapable else null,
@@ -187,11 +174,10 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
                 "isVoiceCapable" to mDefaultTelephonyManager!!.isVoiceCapable,
                 "telephonyInfo" to telephonyList,
                 "subscriptionsInfo" to subscriptionsList,
-            );
+            )
 
             result.success(data)
         } else {
-
             result.error(E_NO_CARRIER_NAME, "No carrier name", "")
         }
 
@@ -290,25 +276,41 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
     }
 
     // return cell id
-    private fun cellId(telephonyManager: TelephonyManager): HashMap<String, Any>? {
-        val location = telephonyManager.cellLocation
-        if (location != null) {
-            var cid = -1
-            var lac = -1
-            if (location is GsmCellLocation) {
-                cid = location.cid
-                lac = (location).lac
+    private fun cellId(telephonyManager: TelephonyManager, slotIndex: Int): HashMap<String, Any>? {
 
-            } else if (location is CdmaCellLocation) {
-                cid = (location).baseStationId
-                lac = (location).networkId
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+            // registeredCellInfo elements are ordered, simSlot 0 information will be in the index 0
+            val registeredCellInfo: ArrayList<CellInfo> = ArrayList()
+            for (cellInfo in telephonyManager.allCellInfo) {
+                if (cellInfo.isRegistered) {
+                    registeredCellInfo.add(cellInfo)
+                }
             }
 
-            return hashMapOf(
-                "cid" to cid,
-                "lac" to lac
-            )
+            var cid = -1;
+            var lac = -1;
 
+            val currentCellInfo = registeredCellInfo[slotIndex]
+
+            if (currentCellInfo is CellInfoGsm) {
+                val identityGsm = currentCellInfo.cellIdentity
+                cid = identityGsm.cid
+                lac = identityGsm.lac
+            } else if (currentCellInfo is CellInfoCdma) {
+                val identityCdma = currentCellInfo.cellIdentity
+                cid = identityCdma.basestationId
+                lac = identityCdma.networkId
+            } else if (currentCellInfo is CellInfoLte) {
+                val identityLte = currentCellInfo.cellIdentity
+                cid = identityLte.ci
+                lac = identityLte.tac
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2 && currentCellInfo is CellInfoWcdma) {
+                val identityWcdma = currentCellInfo.cellIdentity
+                cid = identityWcdma.cid
+                lac = identityWcdma.lac
+            }
+
+            return hashMapOf("cid" to cid, "lac" to lac)
         }
 
         return null;
