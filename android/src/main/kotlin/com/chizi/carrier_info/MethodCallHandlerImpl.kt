@@ -12,6 +12,7 @@ import android.telephony.*
 import androidx.annotation.RequiresApi
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import io.flutter.Log
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
@@ -112,9 +113,9 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
                         try {
                             val data = hashMapOf(
                                 "simSerialNo" to subsInfo.iccId,
-                                "mobileCountryCode" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) subsInfo.mccString?.toInt() else subsInfo.mcc,
+                                "mobileCountryCode" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) subsInfo.mccString else subsInfo.mcc.toString(),
                                 "countryIso" to subsInfo.countryIso,
-                                "mobileNetworkCode" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) subsInfo.mncString?.toInt() else subsInfo.mnc,
+                                "mobileNetworkCode" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) subsInfo.mncString else subsInfo.mnc.toString(),
                                 "cardId" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) subsInfo.cardId else null,
                                 "carrierId" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) subsInfo.carrierId else null,
                                 "dataRoaming" to subsInfo.dataRoaming,
@@ -131,6 +132,10 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
 
                             subscriptionsList.add(data)
                         } catch (e: Exception) {
+                            Log.d(
+                                TAG,
+                                "SubscriptionInfo Exception: ${subsInfo.carrierName}\n${e}"
+                            )
                             subscriptionsList.add(HashMap())
                         }
 
@@ -138,29 +143,37 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
                             val telephonyManager =
                                 mDefaultTelephonyManager!!.createForSubscriptionId(subsInfo.subscriptionId);
 
-                            val data = hashMapOf<String, Any?>(
-                                "carrierName" to telephonyManager.simOperatorName,
-                                "dataActivity" to telephonyManager.dataActivity,
-                                "radioType" to radioType(telephonyManager),
-                                "cellId" to cellId(telephonyManager, subsInfo.simSlotIndex),
-                                "simState" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) simState(
-                                    telephonyManager
-                                ) else null,
-                                "phoneNumber" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
-                                    subsManager.getPhoneNumber(subsInfo.subscriptionId) else subsInfo.number,
-                                "networkOperatorName" to telephonyManager.networkOperatorName,
-                                "subscriptionId" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) telephonyManager.subscriptionId else null,
-                                "isoCountryCode" to telephonyManager.simCountryIso,
-                                "networkCountryIso" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) telephonyManager.networkCountryIso else null,
-                                "mobileNetworkCode" to if (telephonyManager.simOperator?.isEmpty() == false)
-                                    telephonyManager.simOperator?.substring(3) else null,
-                                "displayName" to telephonyManager.simOperatorName,
-                                "mobileCountryCode" to if (telephonyManager.simOperator?.isEmpty() == false)
-                                    telephonyManager.simOperator?.substring(0, 3) else null,
-                                "networkGeneration" to networkGeneration(telephonyManager),
-                            )
+                            try {
+                                val data = hashMapOf<String, Any?>(
+                                    "carrierName" to telephonyManager.simOperatorName,
+                                    "dataActivity" to telephonyManager.dataActivity,
+                                    "radioType" to radioType(telephonyManager),
+                                    "cellId" to cellId(telephonyManager, subsInfo.simSlotIndex),
+                                    "simState" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) simState(
+                                        telephonyManager
+                                    ) else null,
+                                    "phoneNumber" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)
+                                        subsManager.getPhoneNumber(subsInfo.subscriptionId) else subsInfo.number,
+                                    "networkOperatorName" to telephonyManager.networkOperatorName,
+                                    "subscriptionId" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) telephonyManager.subscriptionId else null,
+                                    "isoCountryCode" to telephonyManager.simCountryIso,
+                                    "networkCountryIso" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) telephonyManager.networkCountryIso else null,
+                                    "mobileNetworkCode" to if (telephonyManager.simOperator?.isEmpty() == false)
+                                        telephonyManager.simOperator?.substring(3) else null,
+                                    "displayName" to telephonyManager.simOperatorName,
+                                    "mobileCountryCode" to if (telephonyManager.simOperator?.isEmpty() == false)
+                                        telephonyManager.simOperator?.substring(0, 3) else null,
+                                    "networkGeneration" to networkGeneration(telephonyManager),
+                                )
 
-                            telephonyList.add(data)
+                                telephonyList.add(data)
+                            } catch (e: Exception) {
+                                Log.d(
+                                    TAG,
+                                    "TelephonyManager Exception: ${telephonyManager.simOperatorName}\n${e}"
+                                )
+                                telephonyList.add(HashMap())
+                            }
                         }
                     }
                 }
