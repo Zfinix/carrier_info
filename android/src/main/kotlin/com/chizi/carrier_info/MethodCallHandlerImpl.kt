@@ -112,9 +112,9 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
                         try {
                             val data = hashMapOf(
                                 "simSerialNo" to subsInfo.iccId,
-                                "mobileCountryCode" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) subsInfo.mccString else subsInfo.mcc,
+                                "mobileCountryCode" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) subsInfo.mccString?.toInt() else subsInfo.mcc,
                                 "countryIso" to subsInfo.countryIso,
-                                "mobileNetworkCode" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) subsInfo.mncString else subsInfo.mnc,
+                                "mobileNetworkCode" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) subsInfo.mncString?.toInt() else subsInfo.mnc,
                                 "cardId" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) subsInfo.cardId else null,
                                 "carrierId" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) subsInfo.carrierId else null,
                                 "dataRoaming" to subsInfo.dataRoaming,
