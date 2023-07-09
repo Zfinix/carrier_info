@@ -61,7 +61,7 @@ class AndroidCarrierData {
       isMultiSimSupported: map['isMultiSimSupported'] ?? '',
       isSmsCapable: map['isSmsCapable'] ?? false,
       telephonyInfo: List<TelephonyInfo>.from(
-          map['telephonyInfo']?.map((x) => x ?? TelephonyInfo.fromMap(x))),
+          map['telephonyInfo']?.map((x) => TelephonyInfo.fromMap(x))),
     );
   }
 
@@ -379,7 +379,7 @@ class TelephonyInfo {
       displayName: map['displayName'] ?? '',
       simState: map['simState'] ?? '',
       isoCountryCode: map['isoCountryCode'] ?? '',
-      cellId: CellId.fromMap(map['cellId']),
+      cellId: CellId.fromMap(map['cellId'] ?? <dynamic, dynamic>{}),
       phoneNumber: map['phoneNumber'] ?? '',
       carrierName: map['carrierName'] ?? '',
       subscriptionId: map['subscriptionId'] ?? 0,
