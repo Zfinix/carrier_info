@@ -379,7 +379,7 @@ class TelephonyInfo {
       displayName: map['displayName'] ?? '',
       simState: map['simState'] ?? '',
       isoCountryCode: map['isoCountryCode'] ?? '',
-      cellId: CellId.fromMap(map['cellId'] ?? <dynamic, dynamic>{}),
+      cellId: CellId.fromMap(map['cellId']),
       phoneNumber: map['phoneNumber'] ?? '',
       carrierName: map['carrierName'] ?? '',
       subscriptionId: map['subscriptionId'] ?? 0,
