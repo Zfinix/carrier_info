@@ -61,7 +61,7 @@ class AndroidCarrierData {
       isMultiSimSupported: map['isMultiSimSupported'] ?? '',
       isSmsCapable: map['isSmsCapable'] ?? false,
       telephonyInfo: List<TelephonyInfo>.from(
-          map['telephonyInfo']?.map((x) => TelephonyInfo.fromMap(x))),
+          map['telephonyInfo']?.map((x) => x ?? TelephonyInfo.fromMap(x))),
     );
   }
 
