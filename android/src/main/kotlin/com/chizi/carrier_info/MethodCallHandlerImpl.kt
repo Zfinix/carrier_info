@@ -42,8 +42,12 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
         this.context = context
 
         // Retrieve the default subscription's TelephonyManager used for all calls"
-        mDefaultTelephonyManager =
-            context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+       try {
+           mDefaultTelephonyManager =
+               context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
+       } catch (e: Exception) {
+           Log.e(TAG, e.toString())
+       }
     }
 
     override fun onMethodCall(call: MethodCall, result: MethodChannel.Result) {
@@ -257,34 +261,35 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
     @RequiresApi(Build.VERSION_CODES.N)
     private fun networkGeneration(telephonyManager: TelephonyManager): String {
         when (val radioType = telephonyManager.dataNetworkType) {
-            TelephonyManager.NETWORK_TYPE_GPRS,
-            TelephonyManager.NETWORK_TYPE_EDGE,
-            TelephonyManager.NETWORK_TYPE_CDMA,
-            TelephonyManager.NETWORK_TYPE_1xRTT,
-            TelephonyManager.NETWORK_TYPE_IDEN,
-            TelephonyManager.NETWORK_TYPE_GSM
-            -> return "2G"
+            TelephonyManager.NETWORK_TYPE_GPRS -> return "2G (GPRS)"
+            TelephonyManager.NETWORK_TYPE_EDGE -> return "2G (EDGE)"
+            TelephonyManager.NETWORK_TYPE_CDMA -> return "2G (CDMA)"
+            TelephonyManager.NETWORK_TYPE_1xRTT -> return "2G (1xRTT)"
+            TelephonyManager.NETWORK_TYPE_IDEN -> return "2G (IDEN)"
+            TelephonyManager.NETWORK_TYPE_GSM -> return "2G (GSM)"
 
-            TelephonyManager.NETWORK_TYPE_UMTS,
-            TelephonyManager.NETWORK_TYPE_EVDO_0,
-            TelephonyManager.NETWORK_TYPE_EVDO_A,
-            TelephonyManager.NETWORK_TYPE_HSDPA,
-            TelephonyManager.NETWORK_TYPE_HSUPA,
-            TelephonyManager.NETWORK_TYPE_HSPA,
-            TelephonyManager.NETWORK_TYPE_EVDO_B,
-            TelephonyManager.NETWORK_TYPE_EHRPD,
-            TelephonyManager.NETWORK_TYPE_HSPAP,
-            TelephonyManager.NETWORK_TYPE_TD_SCDMA
-            -> return "3G"
+            TelephonyManager.NETWORK_TYPE_UMTS -> return "3G (UMTS)"
+            TelephonyManager.NETWORK_TYPE_EVDO_0 -> return "3G (EVDO rev. 0)"
+            TelephonyManager.NETWORK_TYPE_EVDO_A -> return "3G (EVDO rev. A)"
+            TelephonyManager.NETWORK_TYPE_HSDPA -> return "3G (HSDPA)"
+            TelephonyManager.NETWORK_TYPE_HSUPA -> return "3G (HSUPA)"
+            TelephonyManager.NETWORK_TYPE_HSPA -> return "3G (HSPA)"
+            TelephonyManager.NETWORK_TYPE_EVDO_B -> return "3G (EVDO rev. B)"
+            TelephonyManager.NETWORK_TYPE_EHRPD -> return "3G (EHRPD)"
+            TelephonyManager.NETWORK_TYPE_HSPAP -> return "3G (HSPA+)"
+            TelephonyManager.NETWORK_TYPE_TD_SCDMA -> return "3G (TD-SCDMA)"
 
-            TelephonyManager.NETWORK_TYPE_LTE
-            -> return "4G"
+            TelephonyManager.NETWORK_TYPE_LTE -> return "4G (5G NSA)"
 
-            TelephonyManager.NETWORK_TYPE_NR,
-            -> return "5G"
+            TelephonyManager.NETWORK_TYPE_NR -> return "5G (5G SA)"
+
+            TelephonyManager.NETWORK_TYPE_IWLAN -> return "IWLAN"
+
+            TelephonyManager.NETWORK_TYPE_UNKNOWN -> return "Unknown"
 
             else -> radioType.toString()
         }
+
         return "unknown"
     }
 

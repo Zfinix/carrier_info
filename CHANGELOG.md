@@ -1,4 +1,8 @@
 
+## 3.0.1
+* Modified the 'networkGeneration' field to include the 'radioType'
+* If there is no SIM card connected, do not throw an exception.
+
 ## 3.0.0
 * Breaking changes for android 10 and below as Telephony is no longer supported by them 
 * Removal of permission checking from package, you'll need to manage permission on the mobile end 

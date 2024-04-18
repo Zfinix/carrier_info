@@ -1,6 +1,6 @@
 name: carrier_info
 description: Carrier Info gets networkType, networkGeneration, mobileCountryCode, mobileCountryCode, e.t.c from both android and ios devices
-version: 3.0.0
+version: 3.0.1
 homepage: https://github.com/Zfinix/carrier_info
 
 environment:

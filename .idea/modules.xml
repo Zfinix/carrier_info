@@ -2,9 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/carrier_info.iml" filepath="$PROJECT_DIR$/carrier_info.iml" />
-      <module fileurl="file://$PROJECT_DIR$/android/carrier_info_android.iml" filepath="$PROJECT_DIR$/android/carrier_info_android.iml" />
-      <module fileurl="file://$PROJECT_DIR$/example/android/carrier_info_example_android.iml" filepath="$PROJECT_DIR$/example/android/carrier_info_example_android.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/carrier_info.iml" filepath="$PROJECT_DIR$/.idea/carrier_info.iml" />
     </modules>
   </component>
 </project>
