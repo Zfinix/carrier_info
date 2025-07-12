@@ -42,7 +42,7 @@ class _MyAppState extends State<MyApp> {
       if (Platform.isAndroid) androidInfo = await CarrierInfo.getAndroidInfo();
       if (Platform.isIOS) iosInfo = await CarrierInfo.getIosInfo();
     } catch (e) {
-      print(e.toString());
+      print('Error getting carrier info: $e');
     }
 
     // If the widget was removed from the tree while the asynchronous platform
@@ -84,53 +84,330 @@ class IosUI extends StatelessWidget {
 
   final IosCarrierData? iosInfo;
 
+  String formatIOSVersion(Map<String, dynamic>? versionDict) {
+    if (versionDict == null) return 'Unknown';
+
+    final major = versionDict['majorVersion'] ?? 0;
+    final minor = versionDict['minorVersion'] ?? 0;
+    final patch = versionDict['patchVersion'] ?? 0;
+
+    return '$major.$minor.$patch';
+  }
+
   @override
   Widget build(BuildContext context) {
+    // Check if we're on iOS 16.0+ and show deprecation notice
+    final versionInfo =
+        iosInfo?.toMap()['_ios_version_info'] as Map<String, dynamic>?;
+    final isDeprecated = versionInfo?['ctcarrier_deprecated'] as bool? ?? false;
+
     return ListView(
       children: [
         const SizedBox(height: 20),
+
+        // Show deprecation notice if on iOS 16.0+
+        if (isDeprecated) ...[
+          Container(
+            margin: const EdgeInsets.all(15),
+            padding: const EdgeInsets.all(15),
+            decoration: BoxDecoration(
+              color: CupertinoColors.systemYellow.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(
+                color: CupertinoColors.systemYellow.withOpacity(0.3),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Row(
+                  children: [
+                    Icon(
+                      CupertinoIcons.exclamationmark_triangle,
+                      color: CupertinoColors.systemYellow,
+                      size: 16,
+                    ),
+                    SizedBox(width: 8),
+                    Text(
+                      'iOS 16.0+ Limitation',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: CupertinoColors.systemYellow,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  versionInfo?['deprecation_notice'] as String? ??
+                      'CTCarrier is deprecated. Most carrier information is unavailable.',
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: CupertinoColors.systemGrey,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+
+        // Device Status Section
         const Padding(
           padding: EdgeInsets.all(15),
           child: Text(
-            'CARRIER INFORMATION',
+            'DEVICE STATUS',
             style: TextStyle(
               fontSize: 15,
               color: CupertinoColors.systemGrey,
             ),
           ),
         ),
+
         HomeItem(
-          title: 'supportsEmbeddedSIM',
-          value: '${iosInfo?.supportsEmbeddedSIM}',
+          title: 'SIM Inserted',
+          value: '${iosInfo?.isSIMInserted ?? false}',
           isFirst: true,
         ),
-        ...(iosInfo?.carrierRadioAccessTechnologyTypeList ?? []).map(
-          (it) => HomeItem(
-            title: '',
-            value: it,
+
+        // iOS Version Info
+        if (versionInfo != null) ...[
+          HomeItem(
+            title: 'iOS Version',
+            value: formatIOSVersion(
+                versionInfo['ios_version'] as Map<String, dynamic>?),
           ),
-        ),
-        ...(iosInfo?.carrierData ?? []).map(
-          (it) => Column(
-            children: [
-              const SizedBox(height: 15),
-              Text(
-                'SIM: ${it.carrierName}',
-                style: const TextStyle(
-                  fontSize: 15,
-                  color: CupertinoColors.systemGrey,
+          HomeItem(
+            title: 'CTCarrier Deprecated',
+            value: '${versionInfo['ctcarrier_deprecated'] ?? false}',
+          ),
+        ],
+
+        // Network Status Section
+        if (iosInfo?.networkStatus != null) ...[
+          const SizedBox(height: 20),
+          const Padding(
+            padding: EdgeInsets.all(15),
+            child: Text(
+              'NETWORK STATUS',
+              style: TextStyle(
+                fontSize: 15,
+                color: CupertinoColors.systemGrey,
+              ),
+            ),
+          ),
+          HomeItem(
+            title: 'Has Cellular Data',
+            value: '${iosInfo?.networkStatus?.hasCellularData ?? false}',
+            isFirst: true,
+          ),
+          HomeItem(
+            title: 'Active Services',
+            value: '${iosInfo?.networkStatus?.activeServices ?? 0}',
+          ),
+          HomeItem(
+            title: 'Technologies',
+            value: (iosInfo?.networkStatus?.technologies?.isNotEmpty ?? false)
+                ? iosInfo!.networkStatus!.technologies!.join(', ')
+                : 'None',
+          ),
+        ],
+
+        // Subscriber Information Section
+        if (iosInfo?.subscriberInfo != null) ...[
+          const SizedBox(height: 20),
+          const Padding(
+            padding: EdgeInsets.all(15),
+            child: Text(
+              'SUBSCRIBER INFORMATION',
+              style: TextStyle(
+                fontSize: 15,
+                color: CupertinoColors.systemGrey,
+              ),
+            ),
+          ),
+          HomeItem(
+            title: 'Subscriber Count',
+            value: '${iosInfo?.subscriberInfo?.subscriberCount ?? 0}',
+            isFirst: true,
+          ),
+          HomeItem(
+            title: 'Subscriber IDs',
+            value: (iosInfo?.subscriberInfo?.subscriberIdentifiers.isNotEmpty ??
+                    false)
+                ? iosInfo!.subscriberInfo!.subscriberIdentifiers.join(', ')
+                : 'None',
+          ),
+          if (iosInfo?.subscriberInfo?.carrierTokens != null)
+            HomeItem(
+              title: 'Carrier Tokens',
+              value:
+                  '${iosInfo?.subscriberInfo?.carrierTokens?.length ?? 0} tokens available',
+            ),
+        ],
+
+        // Cellular Plan Information Section
+        if (iosInfo?.cellularPlanInfo != null) ...[
+          const SizedBox(height: 20),
+          const Padding(
+            padding: EdgeInsets.all(15),
+            child: Text(
+              'CELLULAR PLAN INFORMATION',
+              style: TextStyle(
+                fontSize: 15,
+                color: CupertinoColors.systemGrey,
+              ),
+            ),
+          ),
+          HomeItem(
+            title: 'Supports Embedded SIM',
+            value: '${iosInfo?.cellularPlanInfo?.supportsEmbeddedSIM ?? false}',
+            isFirst: true,
+          ),
+        ],
+
+        // Legacy supportsEmbeddedSIM (for backward compatibility)
+        if (iosInfo?.cellularPlanInfo == null && iosInfo != null) ...[
+          const SizedBox(height: 20),
+          const Padding(
+            padding: EdgeInsets.all(15),
+            child: Text(
+              'LEGACY CARRIER INFORMATION',
+              style: TextStyle(
+                fontSize: 15,
+                color: CupertinoColors.systemGrey,
+              ),
+            ),
+          ),
+          HomeItem(
+            title: 'supportsEmbeddedSIM (Legacy)',
+            value: '${iosInfo?.supportsEmbeddedSIM ?? false}',
+            isFirst: true,
+          ),
+        ],
+
+        // Radio Access Technology (still works on iOS 16.0+)
+        if ((iosInfo?.carrierRadioAccessTechnologyTypeList ?? [])
+            .isNotEmpty) ...[
+          const SizedBox(height: 20),
+          const Padding(
+            padding: EdgeInsets.all(15),
+            child: Text(
+              'RADIO ACCESS TECHNOLOGY (Available on all iOS versions)',
+              style: TextStyle(
+                fontSize: 15,
+                color: CupertinoColors.systemGrey,
+              ),
+            ),
+          ),
+          ...(iosInfo?.carrierRadioAccessTechnologyTypeList ?? [])
+              .asMap()
+              .entries
+              .map(
+                (entry) => HomeItem(
+                  title: 'Technology ${entry.key + 1}',
+                  value: entry.value ?? 'Unknown',
+                  isFirst: entry.key == 0,
                 ),
               ),
-              const SizedBox(height: 15),
-              ...it.toMap().entries.map(
-                    (e) => HomeItem(
-                      title: e.key,
-                      value: '${e.value}',
-                    ),
-                  )
-            ],
+        ],
+
+        // Carrier Data (limited on iOS 16.0+)
+        if ((iosInfo?.carrierData ?? []).isNotEmpty) ...[
+          const SizedBox(height: 20),
+          const Padding(
+            padding: EdgeInsets.all(15),
+            child: Text(
+              'CARRIER DATA',
+              style: TextStyle(
+                fontSize: 15,
+                color: CupertinoColors.systemGrey,
+              ),
+            ),
           ),
-        ),
+          ...(iosInfo?.carrierData ?? []).asMap().entries.map(
+            (entry) {
+              final index = entry.key;
+              final carrierData = entry.value;
+              final carrierMap = carrierData.toMap();
+
+              return Column(
+                children: [
+                  if (index > 0) const SizedBox(height: 15),
+                  Padding(
+                    padding: const EdgeInsets.all(15),
+                    child: Row(
+                      children: [
+                        Text(
+                          'SIM ${index + 1}: ${carrierData.carrierName ?? 'Unknown'}',
+                          style: const TextStyle(
+                            fontSize: 15,
+                            color: CupertinoColors.systemGrey,
+                          ),
+                        ),
+                        if (isDeprecated) ...[
+                          const SizedBox(width: 8),
+                          const Icon(
+                            CupertinoIcons.exclamationmark_triangle_fill,
+                            color: CupertinoColors.systemYellow,
+                            size: 14,
+                          ),
+                        ],
+                      ],
+                    ),
+                  ),
+                  ...carrierMap.entries.map(
+                    (e) {
+                      // Skip internal fields
+                      if (e.key.startsWith('_')) return const SizedBox.shrink();
+
+                      // Highlight deprecated fields
+                      final isDeprecatedField = isDeprecated &&
+                          [
+                            'carrierName',
+                            'mobileCountryCode',
+                            'mobileNetworkCode',
+                            'isoCountryCode',
+                            'carrierAllowsVOIP'
+                          ].contains(e.key);
+
+                      return HomeItem(
+                        title: e.key,
+                        value: e.value?.toString() ?? 'null',
+                        isDeprecated: isDeprecatedField,
+                      );
+                    },
+                  ),
+                ],
+              );
+            },
+          ),
+        ],
+
+        // Show a message if no data is available
+        if (iosInfo == null) ...[
+          const SizedBox(height: 50),
+          const Center(
+            child: Column(
+              children: [
+                Icon(
+                  CupertinoIcons.info_circle,
+                  size: 50,
+                  color: CupertinoColors.systemGrey,
+                ),
+                SizedBox(height: 16),
+                Text(
+                  'Loading carrier information...',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: CupertinoColors.systemGrey,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+
+        const SizedBox(height: 20),
       ],
     );
   }
@@ -164,24 +441,24 @@ class AndroidUI extends StatelessWidget {
             ),
             HomeItem(
               title: 'isVoiceCapable',
-              value: '${androidInfo?.isVoiceCapable}',
+              value: '${androidInfo?.isVoiceCapable ?? false}',
               isFirst: true,
             ),
             HomeItem(
               title: 'isSmsCapable',
-              value: '${androidInfo?.isSmsCapable}',
+              value: '${androidInfo?.isSmsCapable ?? false}',
             ),
             HomeItem(
               title: 'isMultiSimSupported',
-              value: '${androidInfo?.isMultiSimSupported}',
+              value: '${androidInfo?.isMultiSimSupported ?? 'Unknown'}',
             ),
             HomeItem(
               title: 'isDataCapable',
-              value: '${androidInfo?.isDataCapable}',
+              value: '${androidInfo?.isDataCapable ?? false}',
             ),
             HomeItem(
               title: 'isDataEnabled',
-              value: '${androidInfo?.isDataEnabled}',
+              value: '${androidInfo?.isDataEnabled ?? false}',
             ),
             ...(androidInfo?.telephonyInfo ?? []).map((it) {
               return Padding(
@@ -189,7 +466,7 @@ class AndroidUI extends StatelessWidget {
                 child: Column(
                   children: [
                     Text(
-                      'SIM: ${it.phoneNumber} (from telephonyInfo)',
+                      'SIM: ${it.phoneNumber ?? 'Unknown'} (from telephonyInfo)',
                       style: const TextStyle(
                         fontSize: 15,
                         color: CupertinoColors.systemGrey,
@@ -199,7 +476,7 @@ class AndroidUI extends StatelessWidget {
                     ...(it.toMap()).entries.map(
                           (val) => HomeItem(
                             title: '${val.key}',
-                            value: '${val.value}',
+                            value: '${val.value ?? 'N/A'}',
                           ),
                         )
                   ],
@@ -210,7 +487,7 @@ class AndroidUI extends StatelessWidget {
               return Column(
                 children: [
                   Text(
-                    'SIM: ${it.phoneNumber} (from subscriptionsInfo)',
+                    'SIM: ${it.phoneNumber ?? 'Unknown'} (from subscriptionsInfo)',
                     style: const TextStyle(
                       fontSize: 15,
                       color: CupertinoColors.systemGrey,
@@ -220,12 +497,36 @@ class AndroidUI extends StatelessWidget {
                   ...(it.toMap()).entries.map(
                         (val) => HomeItem(
                           title: '${val.key}',
-                          value: '${val.value}',
+                          value: '${val.value ?? 'N/A'}',
                         ),
                       )
                 ],
               );
             }),
+
+            // Show a message if no data is available
+            if (androidInfo == null) ...[
+              const SizedBox(height: 50),
+              const Center(
+                child: Column(
+                  children: [
+                    Icon(
+                      CupertinoIcons.info_circle,
+                      size: 50,
+                      color: CupertinoColors.systemGrey,
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'Loading carrier information...',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: CupertinoColors.systemGrey,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ],
         ),
       ],
@@ -237,11 +538,14 @@ class HomeItem extends StatelessWidget {
   final bool isFirst;
   final String title;
   final String? value;
+  final bool isDeprecated;
+
   const HomeItem({
     super.key,
     required this.title,
     this.value,
     this.isFirst = false,
+    this.isDeprecated = false,
   });
 
   @override
@@ -259,14 +563,40 @@ class HomeItem extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(title),
+                  Row(
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          color:
+                              isDeprecated ? CupertinoColors.systemGrey : null,
+                        ),
+                      ),
+                      if (isDeprecated) ...[
+                        const SizedBox(width: 4),
+                        const Icon(
+                          CupertinoIcons.exclamationmark_triangle_fill,
+                          color: CupertinoColors.systemYellow,
+                          size: 12,
+                        ),
+                      ],
+                    ],
+                  ),
                   const Spacer(),
                   Flexible(
                     child: Wrap(
                       alignment: WrapAlignment.start,
                       crossAxisAlignment: WrapCrossAlignment.start,
                       children: [
-                        Text(value ?? ''),
+                        Text(
+                          value ?? 'N/A',
+                          style: TextStyle(
+                            color: isDeprecated
+                                ? CupertinoColors.systemGrey
+                                : null,
+                            fontStyle: isDeprecated ? FontStyle.italic : null,
+                          ),
+                        ),
                       ],
                     ),
                   ),

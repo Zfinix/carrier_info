@@ -1,4 +1,27 @@
 
+## 3.0.3
+* **NEW FEATURES**: Enhanced iOS implementation with comprehensive CoreTelephony data
+* Add `isSIMInserted` detection for all iOS versions
+* Add `subscriberInfo` with subscriber count, identifiers, and carrier tokens
+* Add `cellularPlanInfo` with dedicated eSIM support detection
+* Add `networkStatus` with real-time network connectivity information
+* Enhanced dual SIM support with proper subscriber counting
+* Add new iOS models: `SubscriberInfo`, `CellularPlanInfo`, `NetworkStatus`
+* Updated example app to showcase all new iOS features with organized sections
+* Updated README with comprehensive iOS features documentation and usage examples
+* Improved iOS version detection and capability handling
+* All new features work across iOS versions with proper fallbacks
+
+## 3.0.2
+* **BREAKING CHANGE**: Handle CTCarrier deprecation in iOS 16.0+
+* Add proper iOS version detection and fallback mechanisms
+* Most carrier-specific information (carrierName, mobileCountryCode, etc.) will return nil on iOS 16.0+ due to Apple's deprecation of CTCarrier APIs
+* Add comprehensive documentation about iOS 16.0+ limitations
+* Radio access technology information still works as it doesn't rely on deprecated CTCarrier APIs
+* Add _ios_version_info field to help developers detect iOS version and handle limitations
+* Add deprecation warnings and notices in iOS implementation
+* Update README with detailed iOS limitations section and technical references
+
 ## 3.0.1
 * Fix JVM target compatibility issues with Java 17
 * Fix Kotlin compilation errors and null safety issues
