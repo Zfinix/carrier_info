@@ -1,4 +1,10 @@
 
+## 3.0.1
+* Fix JVM target compatibility issues with Java 17
+* Fix Kotlin compilation errors and null safety issues
+* Fix syntax errors in networkGeneration function
+* Improve Android build configuration for modern Android development
+
 ## 3.0.0
 * Breaking changes for android 10 and below as Telephony is no longer supported by them 
 * Removal of permission checking from package, you'll need to manage permission on the mobile end 

@@ -287,7 +287,7 @@ class TelephonyInfo {
   final String isoCountryCode;
 
   /// The cell id (cid) and local area code
-  final CellId cellId;
+  final CellId? cellId;
 
   /// Phone number of the sim
   final String phoneNumber;
@@ -301,7 +301,7 @@ class TelephonyInfo {
   final String networkGeneration;
 
   /// The mobile network generation: LTE, HSDPA, e.t.c
-  final String radioType;
+  final String? radioType;
 
   final String networkOperatorName;
   TelephonyInfo({
@@ -311,12 +311,12 @@ class TelephonyInfo {
     required this.displayName,
     required this.simState,
     required this.isoCountryCode,
-    required this.cellId,
+    this.cellId,
     required this.phoneNumber,
     required this.carrierName,
     required this.subscriptionId,
     required this.networkGeneration,
-    required this.radioType,
+    this.radioType,
     required this.networkOperatorName,
   });
 
@@ -361,7 +361,7 @@ class TelephonyInfo {
       'displayName': displayName,
       'simState': simState,
       'isoCountryCode': isoCountryCode,
-      'cellId': cellId.toMap(),
+      'cellId': cellId?.toMap(),
       'phoneNumber': phoneNumber,
       'carrierName': carrierName,
       'subscriptionId': subscriptionId,
@@ -379,12 +379,12 @@ class TelephonyInfo {
       displayName: map['displayName'] ?? '',
       simState: map['simState'] ?? '',
       isoCountryCode: map['isoCountryCode'] ?? '',
-      cellId: CellId.fromMap(map['cellId']),
+      cellId: map['cellId'] != null ? CellId.fromMap(map['cellId']) : null,
       phoneNumber: map['phoneNumber'] ?? '',
       carrierName: map['carrierName'] ?? '',
       subscriptionId: map['subscriptionId'] ?? 0,
       networkGeneration: map['networkGeneration'] ?? '',
-      radioType: map['radioType'] ?? '',
+      radioType: map['radioType'],
       networkOperatorName: map['networkOperatorName'] ?? '',
     );
   }

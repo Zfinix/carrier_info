@@ -36,14 +36,13 @@ public protocol CarrierDelegate: AnyObject {
 final public class Carrier {
     
     // MARK: - Private Properties
-    private let networkInfo = CTTelephonyNetworkInfo()
-    private let planProvisioning = CTCellularPlanProvisioning()
+    private let networkInfo = CTTelephonyNetworkInfo()    private let planProvisioning = CTCellularPlanProvisioning()
     private var carriers = [String : CTCarrier]()
     private var changeObserver: NSObjectProtocol!
     
     public init() {
         
-        changeObserver = NotificationCenter.default.addObserver(forName: NSNotification.Name.CTRadioAccessTechnologyDidChange, object: nil, queue: nil) { [unowned self](notification) in
+        changeObserver = NotificationCenter.default.addObserver(forName: NSNotification.Name.CTServiceRadioAccessTechnologyDidChange, object: nil, queue: nil) { [unowned self](notification) in
             DispatchQueue.main.async {
                 self.delegate?.carrierRadioAccessTechnologyDidChange()
             }
@@ -51,7 +50,6 @@ final public class Carrier {
         
         if #available(iOS 12.0, *) {
             self.carriers = networkInfo.serviceSubscriberCellularProviders ?? [:]
-            
         } else {
             if(networkInfo.subscriberCellularProvider != nil){
                 carriers = ["0": networkInfo.subscriberCellularProvider!]
@@ -106,7 +104,8 @@ final public class Carrier {
     public var carrierInfo: [String: Any?] {
         
         var dataList =  [[String: Any?]]()
-        
+        var subscriberId = CTSubscriber().identifier;
+    
         for carr in carriers.values {
             dataList.append([
                 "carrierName": carr.carrierName,
@@ -123,12 +122,15 @@ final public class Carrier {
                 "carrierData": dataList,
                 "carrierRadioAccessTechnologyTypeList": carrierRadioAccessTechnologyTypeList,
                 "supportsEmbeddedSIM": planProvisioning.supportsEmbeddedSIM,
+                "subscriberIdentifier": subscriberId,
+                "subscriberIdentifier2": CTSubscriberInfo.subscribers().map{$0.identifier},
                 "serviceCurrentRadioAccessTechnology": networkInfo.serviceCurrentRadioAccessTechnology,
             ]
         }else {
             return [
                 "carrierData": dataList,
                 "carrierRadioAccessTechnologyTypeList": carrierRadioAccessTechnologyTypeList,
+                "subscriberIdentifier": subscriberId,
                 "serviceCurrentRadioAccessTechnology": networkInfo.serviceCurrentRadioAccessTechnology,
             ]
         }

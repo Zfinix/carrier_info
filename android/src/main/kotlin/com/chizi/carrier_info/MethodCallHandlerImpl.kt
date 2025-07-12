@@ -108,9 +108,10 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
             val subscriptionsList: ArrayList<HashMap<String, Any?>> = ArrayList()
             val subsManager = context!!.getSystemService(Context.TELEPHONY_SUBSCRIPTION_SERVICE) as SubscriptionManager
 
-            if (subsManager.activeSubscriptionInfoList != null) {
+            val activeSubscriptions = subsManager.activeSubscriptionInfoList
+            if (activeSubscriptions != null) {
 
-                for (subsInfo in subsManager.activeSubscriptionInfoList) {
+                for (subsInfo in activeSubscriptions) {
                     if (subsInfo != null) {
                         try {
                             val data = hashMapOf(
@@ -239,7 +240,7 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
                 -> return "3G"
                 TelephonyManager.NETWORK_TYPE_LTE
                 -> return "4G"
-                TelephonyManager.NETWORK_TYPE_NR,
+                TelephonyManager.NETWORK_TYPE_NR
                 -> return "5G"
                 else -> radioType.toString()
             }
