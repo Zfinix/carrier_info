@@ -305,7 +305,7 @@ class IosUI extends StatelessWidget {
               .map(
                 (entry) => HomeItem(
                   title: 'Technology ${entry.key + 1}',
-                  value: entry.value ?? 'Unknown',
+                  value: entry.value,
                   isFirst: entry.key == 0,
                 ),
               ),
@@ -450,7 +450,7 @@ class AndroidUI extends StatelessWidget {
             ),
             HomeItem(
               title: 'isMultiSimSupported',
-              value: '${androidInfo?.isMultiSimSupported ?? 'Unknown'}',
+              value: androidInfo?.isMultiSimSupported ?? 'Unknown',
             ),
             HomeItem(
               title: 'isDataCapable',
@@ -466,7 +466,7 @@ class AndroidUI extends StatelessWidget {
                 child: Column(
                   children: [
                     Text(
-                      'SIM: ${it.phoneNumber ?? 'Unknown'} (from telephonyInfo)',
+                      'SIM: ${it.phoneNumber} (from telephonyInfo)',
                       style: const TextStyle(
                         fontSize: 15,
                         color: CupertinoColors.systemGrey,
@@ -487,7 +487,7 @@ class AndroidUI extends StatelessWidget {
               return Column(
                 children: [
                   Text(
-                    'SIM: ${it.phoneNumber ?? 'Unknown'} (from subscriptionsInfo)',
+                    'SIM: ${it.phoneNumber} (from subscriptionsInfo)',
                     style: const TextStyle(
                       fontSize: 15,
                       color: CupertinoColors.systemGrey,
