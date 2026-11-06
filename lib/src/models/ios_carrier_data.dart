@@ -10,6 +10,8 @@ class IosCarrierData {
   final SubscriberInfo? subscriberInfo;
   final CellularPlanInfo? cellularPlanInfo;
   final NetworkStatus? networkStatus;
+  final String? dataServiceIdentifier;
+  final String? cellularDataRestriction;
 
   IosCarrierData({
     required this.carrierData,
@@ -19,6 +21,8 @@ class IosCarrierData {
     this.subscriberInfo,
     this.cellularPlanInfo,
     this.networkStatus,
+    this.dataServiceIdentifier,
+    this.cellularDataRestriction,
   });
 
   IosCarrierData copyWith({
@@ -29,6 +33,8 @@ class IosCarrierData {
     SubscriberInfo? subscriberInfo,
     CellularPlanInfo? cellularPlanInfo,
     NetworkStatus? networkStatus,
+    String? dataServiceIdentifier,
+    String? cellularDataRestriction,
   }) {
     return IosCarrierData(
       carrierData: carrierData ?? this.carrierData,
@@ -40,6 +46,8 @@ class IosCarrierData {
       subscriberInfo: subscriberInfo ?? this.subscriberInfo,
       cellularPlanInfo: cellularPlanInfo ?? this.cellularPlanInfo,
       networkStatus: networkStatus ?? this.networkStatus,
+      dataServiceIdentifier: dataServiceIdentifier ?? this.dataServiceIdentifier,
+      cellularDataRestriction: cellularDataRestriction ?? this.cellularDataRestriction,
     );
   }
 
@@ -53,6 +61,8 @@ class IosCarrierData {
       'subscriberInfo': subscriberInfo?.toMap(),
       'cellularPlanInfo': cellularPlanInfo?.toMap(),
       'networkStatus': networkStatus?.toMap(),
+      'dataServiceIdentifier': dataServiceIdentifier,
+      'cellularDataRestriction': cellularDataRestriction,
     };
   }
 
@@ -77,6 +87,8 @@ class IosCarrierData {
       networkStatus: map['networkStatus'] != null
           ? NetworkStatus.fromMap(map['networkStatus'])
           : null,
+      dataServiceIdentifier: map['dataServiceIdentifier'],
+      cellularDataRestriction: map['cellularDataRestriction'],
     );
   }
 
@@ -87,7 +99,7 @@ class IosCarrierData {
 
   @override
   String toString() {
-    return 'IosCarrierData(carrierData: $carrierData, supportsEmbeddedSIM: $supportsEmbeddedSIM, carrierRadioAccessTechnologyTypeList: $carrierRadioAccessTechnologyTypeList, isSIMInserted: $isSIMInserted, subscriberInfo: $subscriberInfo, cellularPlanInfo: $cellularPlanInfo, networkStatus: $networkStatus)';
+    return 'IosCarrierData(carrierData: $carrierData, supportsEmbeddedSIM: $supportsEmbeddedSIM, carrierRadioAccessTechnologyTypeList: $carrierRadioAccessTechnologyTypeList, isSIMInserted: $isSIMInserted, subscriberInfo: $subscriberInfo, cellularPlanInfo: $cellularPlanInfo, networkStatus: $networkStatus, dataServiceIdentifier: $dataServiceIdentifier, cellularDataRestriction: $cellularDataRestriction)';
   }
 
   @override
@@ -102,7 +114,9 @@ class IosCarrierData {
         other.isSIMInserted == isSIMInserted &&
         other.subscriberInfo == subscriberInfo &&
         other.cellularPlanInfo == cellularPlanInfo &&
-        other.networkStatus == networkStatus;
+        other.networkStatus == networkStatus &&
+        other.dataServiceIdentifier == dataServiceIdentifier &&
+        other.cellularDataRestriction == cellularDataRestriction;
   }
 
   @override
@@ -113,7 +127,9 @@ class IosCarrierData {
         isSIMInserted.hashCode ^
         subscriberInfo.hashCode ^
         cellularPlanInfo.hashCode ^
-        networkStatus.hashCode;
+        networkStatus.hashCode ^
+        dataServiceIdentifier.hashCode ^
+        cellularDataRestriction.hashCode;
   }
 }
 
@@ -326,22 +342,34 @@ class NetworkStatus {
   final bool hasCellularData;
   final int? activeServices;
   final List<String>? technologies;
+  final bool? isExpensive;
+  final bool? isConstrained;
+  final bool? usesCellular;
 
   NetworkStatus({
     required this.hasCellularData,
     this.activeServices,
     this.technologies,
+    this.isExpensive,
+    this.isConstrained,
+    this.usesCellular,
   });
 
   NetworkStatus copyWith({
     bool? hasCellularData,
     int? activeServices,
     List<String>? technologies,
+    bool? isExpensive,
+    bool? isConstrained,
+    bool? usesCellular,
   }) {
     return NetworkStatus(
       hasCellularData: hasCellularData ?? this.hasCellularData,
       activeServices: activeServices ?? this.activeServices,
       technologies: technologies ?? this.technologies,
+      isExpensive: isExpensive ?? this.isExpensive,
+      isConstrained: isConstrained ?? this.isConstrained,
+      usesCellular: usesCellular ?? this.usesCellular,
     );
   }
 
@@ -350,6 +378,9 @@ class NetworkStatus {
       'hasCellularData': hasCellularData,
       'activeServices': activeServices,
       'technologies': technologies,
+      'isExpensive': isExpensive,
+      'isConstrained': isConstrained,
+      'usesCellular': usesCellular,
     };
   }
 
@@ -360,6 +391,9 @@ class NetworkStatus {
       technologies: map['technologies'] != null
           ? List<String>.from(map['technologies'])
           : null,
+      isExpensive: map['isExpensive'],
+      isConstrained: map['isConstrained'],
+      usesCellular: map['usesCellular'],
     );
   }
 
@@ -370,7 +404,7 @@ class NetworkStatus {
 
   @override
   String toString() {
-    return 'NetworkStatus(hasCellularData: $hasCellularData, activeServices: $activeServices, technologies: $technologies)';
+    return 'NetworkStatus(hasCellularData: $hasCellularData, activeServices: $activeServices, technologies: $technologies, isExpensive: $isExpensive, isConstrained: $isConstrained, usesCellular: $usesCellular)';
   }
 
   @override
@@ -380,13 +414,19 @@ class NetworkStatus {
     return other is NetworkStatus &&
         other.hasCellularData == hasCellularData &&
         other.activeServices == activeServices &&
-        listEquals(other.technologies, technologies);
+        listEquals(other.technologies, technologies) &&
+        other.isExpensive == isExpensive &&
+        other.isConstrained == isConstrained &&
+        other.usesCellular == usesCellular;
   }
 
   @override
   int get hashCode {
     return hasCellularData.hashCode ^
         activeServices.hashCode ^
-        technologies.hashCode;
+        technologies.hashCode ^
+        isExpensive.hashCode ^
+        isConstrained.hashCode ^
+        usesCellular.hashCode;
   }
 }

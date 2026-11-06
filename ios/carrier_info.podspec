@@ -13,11 +13,12 @@ Carrier Info gets network type, network generation, mobile country and network c
   s.license          = { :file => '../LICENSE' }
   s.author           = 'Zfinix'
   s.source           = { :path => '.' }
-  s.source_files = 'Classes/**/*'
+  s.source_files = 'carrier_info/Sources/carrier_info/**/*.swift'
   s.dependency 'Flutter'
-  s.platform = :ios, '12.0'
+  s.platform = :ios, '13.0'
+  s.frameworks = 'CoreTelephony', 'Network'
 
   # Flutter.framework does not contain a i386 slice.
   s.pod_target_xcconfig = { 'DEFINES_MODULE' => 'YES', 'EXCLUDED_ARCHS[sdk=iphonesimulator*]' => 'i386' }
-  s.swift_version = '5.0'
+  s.swift_version = '5.9'
 end

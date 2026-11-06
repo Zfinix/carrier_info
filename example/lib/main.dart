@@ -210,6 +210,26 @@ class IosUI extends StatelessWidget {
                 ? iosInfo!.networkStatus!.technologies!.join(', ')
                 : 'None',
           ),
+          HomeItem(
+            title: 'Expensive (cellular or hotspot)',
+            value: '${iosInfo?.networkStatus?.isExpensive ?? 'Unknown'}',
+          ),
+          HomeItem(
+            title: 'Low Data Mode',
+            value: '${iosInfo?.networkStatus?.isConstrained ?? 'Unknown'}',
+          ),
+          HomeItem(
+            title: 'Uses Cellular',
+            value: '${iosInfo?.networkStatus?.usesCellular ?? 'Unknown'}',
+          ),
+          HomeItem(
+            title: 'Data SIM',
+            value: iosInfo?.dataServiceIdentifier ?? 'Unknown',
+          ),
+          HomeItem(
+            title: 'Cellular Data for This App',
+            value: iosInfo?.cellularDataRestriction ?? 'Unknown',
+          ),
         ],
 
         // Subscriber Information Section
@@ -459,6 +479,14 @@ class AndroidUI extends StatelessWidget {
             HomeItem(
               title: 'isDataEnabled',
               value: '${androidInfo?.isDataEnabled ?? false}',
+            ),
+            HomeItem(
+              title: 'activeDataSubscriptionId',
+              value: '${androidInfo?.activeDataSubscriptionId ?? 'Unknown'}',
+            ),
+            HomeItem(
+              title: 'isEsimEnabled',
+              value: '${androidInfo?.isEsimEnabled ?? 'Unknown'}',
             ),
             ...(androidInfo?.telephonyInfo ?? []).map((it) {
               return Padding(

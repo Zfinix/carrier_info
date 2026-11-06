@@ -4,7 +4,58 @@
 
 > **⚠️ IMPORTANT iOS 16.0+ NOTICE**: Apple has deprecated `CTCarrier` starting with iOS 16.0. This means that most carrier-specific information (carrier name, country codes, network codes, etc.) will return `nil` or generic values on iOS 16.0 and later versions. This is an Apple platform limitation, not a plugin issue. See the [iOS Limitations](#ios-limitations) section for more details.
 
-Carrier Info gets networkType, networkGeneration, mobileCountryCode, mobileCountryCode, e.t.c from both android and ios devices. It's a port from this [js project](https://github.com/react-native-webrtc/react-native-carrier-info) and an improvement on the existing [flt_telephony_info package](https://pub.dev/packages/flt_telephony_info).
+Carrier Info gets networkType, networkGeneration, mobileCountryCode, mobileNetworkCode, and more from Android and iOS devices. It's a port from this [js project](https://github.com/react-native-webrtc/react-native-carrier-info) and an improvement on the existing [flt_telephony_info package](https://pub.dev/packages/flt_telephony_info).
+
+## Requirements
+
+- Flutter 3.44 or later, Dart 3.12 or later
+- Android 7.0 (API 24) or later
+- iOS 13 or later
+
+## Quick start
+
+`getSummary` returns the details both platforms report, so you do not need to branch on the platform:
+
+```dart
+final summary = await CarrierInfo.getSummary();
+
+summary.isSimInserted;       // true
+summary.networkGeneration;   // '5G'
+summary.radioType;           // 'LTE' on 5G NSA, 'NR' on 5G SA
+for (final sim in summary.sims) {
+  print('${sim.carrierName} ${sim.mobileCountryCode}${sim.mobileNetworkCode} data: ${sim.isDataSim}');
+}
+```
+
+Use `getAndroidInfo` and `getIosInfo` when you need everything a platform offers.
+
+## New in 4.0
+
+**Android**
+- `networkGeneration` reports `5G` on 5G NSA networks, matching the status bar, instead of `4G`
+- `displayNetworkType`: what the status bar shows, `NONE`, `LTE_CA`, `LTE_ADVANCED_PRO`, `NR_NSA` or `NR_ADVANCED` (Android 12+)
+- `signalLevel` (0 to 4) and `signalDbm`
+- `simCarrierId` and `simCarrierIdName` from Android's carrier database
+- `networkOperator`: the MCC and MNC of the network you are on, which differs from the SIM when roaming
+- `isNetworkRoaming`, `simSlotIndex`, `isUsingNonTerrestrialNetwork` (satellite, Android 15+)
+- `activeDataSubscriptionId`: which SIM carries mobile data
+- `isEsimEnabled` and `portIndex` for phones with several eSIM profiles
+- Each SIM is now read on its own on dual-SIM phones
+
+**iOS**
+- `dataServiceIdentifier`: which SIM carries mobile data
+- `cellularDataRestriction`: `restricted` when the user turned off mobile data for your app
+- `networkStatus.isExpensive`, `isConstrained` (Low Data Mode) and `usesCellular`
+- `supportsEmbeddedSIM` is now reported on every iOS version
+
+### Migrating from 3.x
+
+Existing calls keep working with the same models and defaults. What changed:
+
+- The minimum versions above went up.
+- The plugin talks to the platform through [Pigeon](https://pub.dev/packages/pigeon). If your tests mocked the `plugins.chizi.tech/carrier_info` method channel, mock the Pigeon channels instead, or wrap `CarrierInfo` behind your own interface.
+- A missing permission now empties only the fields that need it, instead of failing the whole call.
+- Android: a device without telephony throws a `PlatformException` with the code `no_telephony`.
 
 ## 📸 Screen Shots
 
@@ -70,10 +121,10 @@ Docs: https://developer.android.com/reference/android/telephony/TelephonyManager
 ### Fetching iOS carrier info
 
 ```dart
- IosCarrierData? carrierInfo = await CarrierInfo.getIosInfo();
+ IosCarrierData iosInfo = await CarrierInfo.getIosInfo();
 
- // iOS 15.x and earlier - Full carrier information available
- returns  {
+ // iOS 15.x and earlier: full carrier information. iosInfo.toMap() returns
+ {
    "carrierData": [
      {
        "mobileNetworkCode": "20",
@@ -83,42 +134,7 @@ Docs: https://developer.android.com/reference/android/telephony/TelephonyManager
        "isoCountryCode": "ng"
      }
    ],
-   "supportsEmbeddedSIM": false,
-   "carrierRadioAccessTechnologyTypeList": ["LTE"],
-   "isSIMInserted": true,
-   "subscriberInfo": {
-     "subscriberCount": 1,
-     "subscriberIdentifiers": ["subscriber_id_here"],
-     "carrierTokens": ["token_here"]
-   },
-   "cellularPlanInfo": {
-     "supportsEmbeddedSIM": false
-   },
-   "networkStatus": {
-     "hasCellularData": true,
-     "activeServices": 1,
-     "technologies": ["LTE"]
-   },
-   "_ios_version_info": {
-     "ios_version": {...},
-     "ctcarrier_deprecated": false,
-     "deprecation_notice": "CTCarrier functionality is available on this iOS version."
-   }
- }
-
- // iOS 16.0+ - Limited carrier information due to CTCarrier deprecation
- returns  {
-   "carrierData": [
-     {
-       "mobileNetworkCode": null,
-       "carrierAllowsVOIP": null,
-       "mobileCountryCode": null,
-       "carrierName": null,
-       "isoCountryCode": null,
-       "_deprecated_notice": "CTCarrier is deprecated in iOS 16.0+. Carrier information is no longer available."
-     }
-   ],
-   "supportsEmbeddedSIM": false,
+   "supportsEmbeddedSIM": true,
    "carrierRadioAccessTechnologyTypeList": ["LTE"],
    "isSIMInserted": true,
    "subscriberInfo": {
@@ -132,13 +148,27 @@ Docs: https://developer.android.com/reference/android/telephony/TelephonyManager
    "networkStatus": {
      "hasCellularData": true,
      "activeServices": 1,
-     "technologies": ["LTE"]
+     "technologies": ["CTRadioAccessTechnologyLTE"],
+     "isExpensive": true,
+     "isConstrained": false,
+     "usesCellular": true
    },
-   "_ios_version_info": {
-     "ios_version": {...},
-     "ctcarrier_deprecated": true,
-     "deprecation_notice": "CTCarrier and CTSubscriber are deprecated in iOS 16.0+. Most carrier-specific information is no longer available for privacy and security reasons."
-   }
+   "dataServiceIdentifier": "0000000100000001",
+   "cellularDataRestriction": "notRestricted"
+ }
+
+ // iOS 16.0+: carrier fields are null, everything else is unchanged
+ {
+   "carrierData": [
+     {
+       "mobileNetworkCode": null,
+       "carrierAllowsVOIP": null,
+       "mobileCountryCode": null,
+       "carrierName": null,
+       "isoCountryCode": null
+     }
+   ],
+   ...
  }
 ```
 
@@ -160,7 +190,7 @@ Docs: https://developer.android.com/reference/android/telephony/TelephonyManager
 }
 ```
 
-#### Subscriber Information (iOS 16.0+)
+#### Subscriber Information
 ```dart
 "subscriberInfo": {
   "subscriberCount": 1,                           // Number of subscribers (dual SIM)
@@ -178,22 +208,17 @@ Docs: https://developer.android.com/reference/android/telephony/TelephonyManager
 
 ### iOS Version Detection
 
-Use the `_ios_version_info` field to detect capabilities:
+On iOS 16 and later the carrier name and codes come back as `null`. Check for that instead of the iOS version:
 
 ```dart
 final iosInfo = await CarrierInfo.getIosInfo();
-final versionInfo = iosInfo?.toMap()['_ios_version_info'] as Map<String, dynamic>?;
-final isDeprecated = versionInfo?['ctcarrier_deprecated'] as bool? ?? false;
+final carrier = iosInfo.carrierData.firstOrNull;
 
-if (isDeprecated) {
-  // Handle iOS 16.0+ limitations
-  print('SIM Inserted: ${iosInfo?.isSIMInserted}');
-  print('Network Status: ${iosInfo?.networkStatus?.hasCellularData}');
-  print('Radio Tech: ${iosInfo?.carrierRadioAccessTechnologyTypeList}');
+if (carrier?.carrierName == null) {
+  print('SIM Inserted: ${iosInfo.isSIMInserted}');
+  print('Radio Tech: ${iosInfo.carrierRadioAccessTechnologyTypeList}');
 } else {
-  // Full carrier information available
-  print('Carrier: ${iosInfo?.carrierData?.first.carrierName}');
-  print('MCC: ${iosInfo?.carrierData?.first.mobileCountryCode}');
+  print('Carrier: ${carrier!.carrierName}');
 }
 ```
 
@@ -219,7 +244,7 @@ Starting with iOS 16.0, Apple has deprecated the `CTCarrier` class and related A
 
 ### Recommendations
 
-1. **Check iOS version**: Use the `_ios_version_info` field to determine if you're running on iOS 16.0+ and handle the limitations accordingly.
+1. **Check for null**: Carrier fields are `null` on iOS 16.0+, so handle that instead of checking the version.
 
 2. **Use available features**: Focus on features that work across all iOS versions:
    ```dart
@@ -254,17 +279,20 @@ The plugin now includes enhanced models for iOS data:
 - [iOS 16.0 Release Notes](https://developer.apple.com/documentation/ios-ipados-release-notes/ios-ipados-16-release-notes)
 
 ### Permissions
-You should add permissions that are required to your android manifest:
+Add the permissions you need to your Android manifest, and request the runtime ones yourself, for example with [permission_handler](https://pub.dev/packages/permission_handler):
 
 ```xml
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
-  <uses-permission android:name="android.permission.READ_BASIC_PHONE_STATE" />
   <uses-permission android:name="android.permission.READ_PHONE_STATE" />
   <uses-permission android:name="android.permission.READ_PHONE_NUMBERS" />
-  <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-  <uses-permission android:name="android.permission.READ_PRIVILEGED_PHONE_STATE" />
 ```
+
+- `READ_PHONE_STATE`: subscriptions, data network type, SIM state, signal strength
+- `READ_PHONE_NUMBERS`: phone numbers
+- `ACCESS_FINE_LOCATION`: `cellId`
+
+Fields whose permission is missing come back empty. `simSerialNo` is always empty on Android 10 and later, because only system apps can read the SIM serial number.
 
 ## ✨ Contribution
 
