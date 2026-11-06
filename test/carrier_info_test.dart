@@ -374,15 +374,23 @@ void main() {
       );
     });
 
-    test('iOS 16+ drops the empty placeholder carrier', () {
+    test('iOS 16+ lists each SIM by subscriber and marks the data SIM', () {
       expect(
         CarrierSummary.fromIos(IosCarrierData.fromMap({
           'carrierData': [<String, Object?>{}],
-          'carrierRadioAccessTechnologyTypeList': ['NRNSA'],
+          'carrierRadioAccessTechnologyTypeList': ['NRNSA', 'LTE'],
           'isSIMInserted': true,
+          'subscriberInfo': {
+            'subscriberCount': 2,
+            'subscriberIdentifiers': ['0000000100000001', '0000000100000002'],
+          },
+          'dataServiceIdentifier': '0000000100000002',
         })),
         const CarrierSummary(
-          sims: [],
+          sims: [
+            SimCarrier(isDataSim: false),
+            SimCarrier(isDataSim: true),
+          ],
           isSimInserted: true,
           supportsEmbeddedSim: false,
           networkGeneration: '5G',

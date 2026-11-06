@@ -12,7 +12,7 @@
 * Android: return empty `mobileCountryCode` and `mobileNetworkCode` instead of failing when no SIM is present
 * Android: remove the permission-result listener, so host apps keep their own permission results after a configuration change
 * iOS: add `dataServiceIdentifier` and `cellularDataRestriction` to `IosCarrierData`, and `isExpensive`, `isConstrained` and `usesCellular` to `NetworkStatus`
-* iOS: report `supportsEmbeddedSIM` on every iOS version, including the top-level field that was always `false`
+* iOS: fill the top-level `supportsEmbeddedSIM` field, which was never set. Apple only returns `true` to carrier apps with the carrier entitlement
 * iOS: remove a debug print that ran at startup on iOS 16+
 * Parse a missing `subscriptionsInfo` or `telephonyInfo` list as empty instead of throwing
 * Add tests for the models, the Pigeon bridge and the summary

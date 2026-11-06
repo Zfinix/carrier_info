@@ -46,7 +46,8 @@ Use `getAndroidInfo` and `getIosInfo` when you need everything a platform offers
 - `dataServiceIdentifier`: which SIM carries mobile data
 - `cellularDataRestriction`: `restricted` when the user turned off mobile data for your app
 - `networkStatus.isExpensive`, `isConstrained` (Low Data Mode) and `usesCellular`
-- `supportsEmbeddedSIM` is now reported on every iOS version
+- `supportsEmbeddedSIM` is filled at the top level too. Apple returns `false` to apps without the carrier entitlement, even on eSIM iPhones
+- On iOS 16+, `getSummary` lists one SIM per subscriber with `isDataSim` set, since carrier names are no longer available
 
 ### Migrating from 3.x
 

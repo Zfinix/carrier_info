@@ -106,19 +106,33 @@ class CarrierSummary {
         ? data.carrierRadioAccessTechnologyTypeList.first
         : null;
 
+    final carriers = data.carrierData
+        .where((c) =>
+            c.carrierName != null ||
+            c.mobileCountryCode != null ||
+            c.mobileNetworkCode != null)
+        .toList();
+    final subscribers = data.subscriberInfo?.subscriberIdentifiers ?? const [];
+
     return CarrierSummary(
-      sims: [
-        for (final c in data.carrierData)
-          if (c.carrierName != null ||
-              c.mobileCountryCode != null ||
-              c.mobileNetworkCode != null)
-            SimCarrier(
-              carrierName: c.carrierName,
-              mobileCountryCode: c.mobileCountryCode,
-              mobileNetworkCode: c.mobileNetworkCode,
-              isoCountryCode: c.isoCountryCode,
-            ),
-      ],
+      sims: carriers.isNotEmpty
+          ? [
+              for (final c in carriers)
+                SimCarrier(
+                  carrierName: c.carrierName,
+                  mobileCountryCode: c.mobileCountryCode,
+                  mobileNetworkCode: c.mobileNetworkCode,
+                  isoCountryCode: c.isoCountryCode,
+                ),
+            ]
+          : [
+              for (final id in subscribers)
+                SimCarrier(
+                  isDataSim: data.dataServiceIdentifier == null
+                      ? null
+                      : id == data.dataServiceIdentifier,
+                ),
+            ],
       isSimInserted: data.isSIMInserted,
       supportsEmbeddedSim: data.supportsEmbeddedSIM,
       networkGeneration: technology == null ? null : _iosGeneration(technology),
