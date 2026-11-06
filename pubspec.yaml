@@ -1,17 +1,20 @@
 name: carrier_info
-description: Carrier Info gets networkType, networkGeneration, mobileCountryCode, mobileCountryCode, e.t.c from both android and ios devices
-version: 3.0.3
+description: Carrier Info gets networkType, networkGeneration, mobileCountryCode, mobileNetworkCode, and more from Android and iOS devices.
+version: 4.0.0
 homepage: https://github.com/Zfinix/carrier_info
+repository: https://github.com/Zfinix/carrier_info
+issue_tracker: https://github.com/Zfinix/carrier_info/issues
 
 environment:
-  sdk: ">=3.0.0 <4.0.0"
-  flutter: ">=1.10.0"
+  sdk: ^3.12.0
+  flutter: ">=3.44.0"
 
 dependencies:
   flutter:
     sdk: flutter
 
 dev_dependencies:
+  flutter_lints: ^6.0.0
   flutter_test:
     sdk: flutter
 

@@ -1,4 +1,14 @@
 
+## 4.0.0
+* **BREAKING CHANGE**: Require Flutter 3.44 and Dart 3.12, the minimum for built-in Kotlin
+* Migrate the Android plugin to built-in Kotlin, so apps can build on Android Gradle Plugin 9 (fixes #47)
+* Remove the Android permission-result listener. Host apps keep their own permission results after a configuration change
+* Return empty `mobileCountryCode` and `mobileNetworkCode` instead of failing when no SIM is present
+* Parse a missing `subscriptionsInfo` or `telephonyInfo` list as empty instead of throwing
+* Remove a debug print that ran on iOS 16+ at startup
+* Add unit tests for the Android and iOS models and the method channel
+* Add `flutter_lints` and fix the example app's broken widget test
+
 ## 3.0.3
 * **NEW FEATURES**: Enhanced iOS implementation with comprehensive CoreTelephony data
 * Add `isSIMInserted` detection for all iOS versions

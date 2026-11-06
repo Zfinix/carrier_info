@@ -56,7 +56,6 @@ final public class Carrier {
             // serviceSubscriberCellularProviders returns nil or empty data
             // We'll provide fallback empty data structure
             self.carriers = [:]
-            print("⚠️ CTCarrier is deprecated in iOS 16.0+. Carrier information will be limited.")
         } else if #available(iOS 12.0, *) {
             self.carriers = networkInfo.serviceSubscriberCellularProviders ?? [:]
         } else {

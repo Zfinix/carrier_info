@@ -42,7 +42,7 @@ class _MyAppState extends State<MyApp> {
       if (Platform.isAndroid) androidInfo = await CarrierInfo.getAndroidInfo();
       if (Platform.isIOS) iosInfo = await CarrierInfo.getIosInfo();
     } catch (e) {
-      print('Error getting carrier info: $e');
+      debugPrint('Error getting carrier info: $e');
     }
 
     // If the widget was removed from the tree while the asynchronous platform

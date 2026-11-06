@@ -4,8 +4,9 @@ import 'package:carrier_info/carrier_info.dart';
 import 'package:flutter/services.dart';
 
 class CarrierInfo {
-  static const MethodChannel _channel =
-      const MethodChannel('plugins.chizi.tech/carrier_info');
+  static const MethodChannel _channel = MethodChannel(
+    'plugins.chizi.tech/carrier_info',
+  );
 
   /// Get carrier data from android device
   static Future<AndroidCarrierData?> getAndroidInfo() async {
@@ -16,8 +17,6 @@ class CarrierInfo {
 
   /// Get all carrier data ios device
   static Future<IosCarrierData> getIosInfo() async {
-    return IosCarrierData.fromMap(
-      await _channel.invokeMethod('getIosInfo'),
-    );
+    return IosCarrierData.fromMap(await _channel.invokeMethod('getIosInfo'));
   }
 }

@@ -1,10 +1,7 @@
 package com.chizi.carrier_info
 
 
-import android.Manifest
-import android.app.Activity
 import android.content.Context
-import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
@@ -13,18 +10,15 @@ import android.telephony.TelephonyManager
 import android.telephony.cdma.CdmaCellLocation
 import android.telephony.gsm.GsmCellLocation
 import androidx.annotation.RequiresApi
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import java.lang.Exception
 
 
-internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : MethodCallHandler {
+internal class MethodCallHandlerImpl(context: Context) : MethodCallHandler {
     private val TAG: String = "carrier_info"
     private var context: Context?
-    private var activity: Activity?
     private val E_NO_CARRIER_NAME = "no_carrier_name"
     private val E_NO_NETWORK_TYPE = "no_network_type"
     private val E_NO_ISO_COUNTRY_CODE = "no_iso_country_code"
@@ -33,15 +27,8 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
     private val E_NO_NETWORK_OPERATOR = "no_network_operator"
     private val E_NO_CELL_ID = "no_cell_id"
     private var mTelephonyManager: TelephonyManager? = null
-    private lateinit var func: () -> Unit?
-
-
-    fun setActivity(act: Activity?) {
-        this.activity = act
-    }
 
     init {
-        this.activity = activity
         this.context = context
 
         mTelephonyManager = context.getSystemService(Context.TELEPHONY_SERVICE) as TelephonyManager
@@ -68,18 +55,6 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
     }
 
 
-    private fun requestForSpecificPermission(i: Int) {
-        ActivityCompat.requestPermissions(this.activity!!, arrayOf(Manifest.permission.READ_PHONE_STATE, Manifest.permission.ACCESS_NETWORK_STATE, Manifest.permission.ACCESS_COARSE_LOCATION, Manifest.permission.ACCESS_FINE_LOCATION), i)
-    }
-
-    private fun checkIfAlreadyHavePermission(): Boolean {
-        return ContextCompat.checkSelfPermission(this.activity!!, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(this.activity!!, Manifest.permission.ACCESS_NETWORK_STATE) == PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(this.activity!!, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
-                ContextCompat.checkSelfPermission(this.activity!!, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
-    }
-
-
     private fun getInfo(result: MethodChannel.Result) {
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -96,9 +71,9 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
                         "subscriptionId" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) mTelephonyManager!!.subscriptionId else null,
                         "isoCountryCode" to mTelephonyManager!!.simCountryIso,
                         "networkCountryIso" to mTelephonyManager!!.getNetworkCountryIso(i),
-                        "mobileNetworkCode" to mTelephonyManager!!.simOperator?.substring(3),
+                        "mobileNetworkCode" to mTelephonyManager!!.simOperator?.drop(3),
                         "displayName" to mTelephonyManager!!.simOperatorName,
-                        "mobileCountryCode" to mTelephonyManager!!.simOperator?.substring(0, 3),
+                        "mobileCountryCode" to mTelephonyManager!!.simOperator?.take(3),
                         "networkGeneration" to if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) networkGeneration() else null,
                 )
 
@@ -274,30 +249,5 @@ internal class MethodCallHandlerImpl(context: Context, activity: Activity?) : Me
         return null;
     }
 
-
-    fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>?, grantResults: IntArray?) {
-        when (requestCode) {
-            0 -> return if (grantResults!![0] == PackageManager.PERMISSION_GRANTED) {
-                this.func()!!
-
-            } else {
-                requestForSpecificPermission(0)
-
-            }
-            1 -> return if (grantResults!![0] == PackageManager.PERMISSION_GRANTED) {
-                this.func()!!
-
-            } else {
-                requestForSpecificPermission(1)
-
-            }
-            2 -> return if (grantResults!![0] == PackageManager.PERMISSION_GRANTED) {
-                this.func()!!
-
-            } else {
-                requestForSpecificPermission(2)
-            }
-        }
-    }
 }
 

@@ -56,12 +56,12 @@ class AndroidCarrierData {
       isVoiceCapable: map['isVoiceCapable'] ?? false,
       isDataEnabled: map['isDataEnabled'] ?? false,
       subscriptionsInfo: List<SubscriptionsInfo>.from(
-          map['subscriptionsInfo']?.map((x) => SubscriptionsInfo.fromMap(x))),
+          (map['subscriptionsInfo'] ?? []).map((x) => SubscriptionsInfo.fromMap(x))),
       isDataCapable: map['isDataCapable'] ?? false,
       isMultiSimSupported: map['isMultiSimSupported'] ?? '',
       isSmsCapable: map['isSmsCapable'] ?? false,
       telephonyInfo: List<TelephonyInfo>.from(
-          map['telephonyInfo']?.map((x) => TelephonyInfo.fromMap(x))),
+          (map['telephonyInfo'] ?? []).map((x) => TelephonyInfo.fromMap(x))),
     );
   }
 
