@@ -9,6 +9,8 @@ class AndroidCarrierData {
   final String isMultiSimSupported;
   final bool isSmsCapable;
   final List<TelephonyInfo> telephonyInfo;
+  final int? activeDataSubscriptionId;
+  final bool? isEsimEnabled;
   AndroidCarrierData({
     required this.isVoiceCapable,
     required this.isDataEnabled,
@@ -17,6 +19,8 @@ class AndroidCarrierData {
     required this.isMultiSimSupported,
     required this.isSmsCapable,
     required this.telephonyInfo,
+    this.activeDataSubscriptionId,
+    this.isEsimEnabled,
   });
 
   AndroidCarrierData copyWith({
@@ -27,6 +31,8 @@ class AndroidCarrierData {
     String? isMultiSimSupported,
     bool? isSmsCapable,
     List<TelephonyInfo>? telephonyInfo,
+    int? activeDataSubscriptionId,
+    bool? isEsimEnabled,
   }) {
     return AndroidCarrierData(
       isVoiceCapable: isVoiceCapable ?? this.isVoiceCapable,
@@ -36,6 +42,8 @@ class AndroidCarrierData {
       isMultiSimSupported: isMultiSimSupported ?? this.isMultiSimSupported,
       isSmsCapable: isSmsCapable ?? this.isSmsCapable,
       telephonyInfo: telephonyInfo ?? this.telephonyInfo,
+      activeDataSubscriptionId: activeDataSubscriptionId ?? this.activeDataSubscriptionId,
+      isEsimEnabled: isEsimEnabled ?? this.isEsimEnabled,
     );
   }
 
@@ -48,6 +56,8 @@ class AndroidCarrierData {
       'isMultiSimSupported': isMultiSimSupported,
       'isSmsCapable': isSmsCapable,
       'telephonyInfo': telephonyInfo.map((x) => x.toMap()).toList(),
+      'activeDataSubscriptionId': activeDataSubscriptionId,
+      'isEsimEnabled': isEsimEnabled,
     };
   }
 
@@ -56,12 +66,14 @@ class AndroidCarrierData {
       isVoiceCapable: map['isVoiceCapable'] ?? false,
       isDataEnabled: map['isDataEnabled'] ?? false,
       subscriptionsInfo: List<SubscriptionsInfo>.from(
-          map['subscriptionsInfo']?.map((x) => SubscriptionsInfo.fromMap(x))),
+          (map['subscriptionsInfo'] ?? []).map((x) => SubscriptionsInfo.fromMap(x))),
       isDataCapable: map['isDataCapable'] ?? false,
       isMultiSimSupported: map['isMultiSimSupported'] ?? '',
       isSmsCapable: map['isSmsCapable'] ?? false,
       telephonyInfo: List<TelephonyInfo>.from(
-          map['telephonyInfo']?.map((x) => TelephonyInfo.fromMap(x))),
+          (map['telephonyInfo'] ?? []).map((x) => TelephonyInfo.fromMap(x))),
+      activeDataSubscriptionId: map['activeDataSubscriptionId'],
+      isEsimEnabled: map['isEsimEnabled'],
     );
   }
 
@@ -72,7 +84,7 @@ class AndroidCarrierData {
 
   @override
   String toString() {
-    return 'AndroidCarrierData(isVoiceCapable: $isVoiceCapable, isDataEnabled: $isDataEnabled, subscriptionsInfo: $subscriptionsInfo, isDataCapable: $isDataCapable, isMultiSimSupported: $isMultiSimSupported, isSmsCapable: $isSmsCapable, telephonyInfo: $telephonyInfo)';
+    return 'AndroidCarrierData(isVoiceCapable: $isVoiceCapable, isDataEnabled: $isDataEnabled, subscriptionsInfo: $subscriptionsInfo, isDataCapable: $isDataCapable, isMultiSimSupported: $isMultiSimSupported, isSmsCapable: $isSmsCapable, telephonyInfo: $telephonyInfo, activeDataSubscriptionId: $activeDataSubscriptionId, isEsimEnabled: $isEsimEnabled)';
   }
 
   @override
@@ -86,7 +98,9 @@ class AndroidCarrierData {
         other.isDataCapable == isDataCapable &&
         other.isMultiSimSupported == isMultiSimSupported &&
         other.isSmsCapable == isSmsCapable &&
-        listEquals(other.telephonyInfo, telephonyInfo);
+        listEquals(other.telephonyInfo, telephonyInfo) &&
+        other.activeDataSubscriptionId == activeDataSubscriptionId &&
+        other.isEsimEnabled == isEsimEnabled;
   }
 
   @override
@@ -97,7 +111,9 @@ class AndroidCarrierData {
         isDataCapable.hashCode ^
         isMultiSimSupported.hashCode ^
         isSmsCapable.hashCode ^
-        telephonyInfo.hashCode;
+        telephonyInfo.hashCode ^
+        activeDataSubscriptionId.hashCode ^
+        isEsimEnabled.hashCode;
   }
 }
 
@@ -124,6 +140,7 @@ class SubscriptionsInfo {
   final int subscriptionId;
   final String simSerialNo;
   final int dataRoaming;
+  final int? portIndex;
   SubscriptionsInfo({
     required this.mobileCountryCode,
     required this.isOpportunistic,
@@ -140,6 +157,7 @@ class SubscriptionsInfo {
     required this.subscriptionId,
     required this.simSerialNo,
     required this.dataRoaming,
+    this.portIndex,
   });
 
   SubscriptionsInfo copyWith({
@@ -158,6 +176,7 @@ class SubscriptionsInfo {
     int? subscriptionId,
     String? simSerialNo,
     int? dataRoaming,
+    int? portIndex,
   }) {
     return SubscriptionsInfo(
       mobileCountryCode: mobileCountryCode ?? this.mobileCountryCode,
@@ -175,6 +194,7 @@ class SubscriptionsInfo {
       subscriptionId: subscriptionId ?? this.subscriptionId,
       simSerialNo: simSerialNo ?? this.simSerialNo,
       dataRoaming: dataRoaming ?? this.dataRoaming,
+      portIndex: portIndex ?? this.portIndex,
     );
   }
 
@@ -195,6 +215,7 @@ class SubscriptionsInfo {
       'subscriptionId': subscriptionId,
       'simSerialNo': simSerialNo,
       'dataRoaming': dataRoaming,
+      'portIndex': portIndex,
     };
   }
 
@@ -215,6 +236,7 @@ class SubscriptionsInfo {
       subscriptionId: map['subscriptionId'] ?? 0,
       simSerialNo: map['simSerialNo'] ?? '',
       dataRoaming: map['dataRoaming'] ?? 0,
+      portIndex: map['portIndex'],
     );
   }
 
@@ -225,7 +247,7 @@ class SubscriptionsInfo {
 
   @override
   String toString() {
-    return 'SubscriptionsInfo(mobileCountryCode: $mobileCountryCode, isOpportunistic: $isOpportunistic, mobileNetworkCode: $mobileNetworkCode, displayName: $displayName, isNetworkRoaming: $isNetworkRoaming, simSlotIndex: $simSlotIndex, phoneNumber: $phoneNumber, countryIso: $countryIso, subscriptionType: $subscriptionType, cardId: $cardId, isEmbedded: $isEmbedded, carrierId: $carrierId, subscriptionId: $subscriptionId, simSerialNo: $simSerialNo, dataRoaming: $dataRoaming)';
+    return 'SubscriptionsInfo(mobileCountryCode: $mobileCountryCode, isOpportunistic: $isOpportunistic, mobileNetworkCode: $mobileNetworkCode, displayName: $displayName, isNetworkRoaming: $isNetworkRoaming, simSlotIndex: $simSlotIndex, phoneNumber: $phoneNumber, countryIso: $countryIso, subscriptionType: $subscriptionType, cardId: $cardId, isEmbedded: $isEmbedded, carrierId: $carrierId, subscriptionId: $subscriptionId, simSerialNo: $simSerialNo, dataRoaming: $dataRoaming, portIndex: $portIndex)';
   }
 
   @override
@@ -247,7 +269,8 @@ class SubscriptionsInfo {
         other.carrierId == carrierId &&
         other.subscriptionId == subscriptionId &&
         other.simSerialNo == simSerialNo &&
-        other.dataRoaming == dataRoaming;
+        other.dataRoaming == dataRoaming &&
+        other.portIndex == portIndex;
   }
 
   @override
@@ -266,7 +289,8 @@ class SubscriptionsInfo {
         carrierId.hashCode ^
         subscriptionId.hashCode ^
         simSerialNo.hashCode ^
-        dataRoaming.hashCode;
+        dataRoaming.hashCode ^
+        portIndex.hashCode;
   }
 }
 
@@ -304,6 +328,15 @@ class TelephonyInfo {
   final String? radioType;
 
   final String networkOperatorName;
+  final int? simSlotIndex;
+  final String? networkOperator;
+  final bool? isNetworkRoaming;
+  final int? simCarrierId;
+  final String? simCarrierIdName;
+  final int? signalLevel;
+  final int? signalDbm;
+  final String? displayNetworkType;
+  final bool? isUsingNonTerrestrialNetwork;
   TelephonyInfo({
     required this.networkCountryIso,
     required this.mobileCountryCode,
@@ -318,6 +351,15 @@ class TelephonyInfo {
     required this.networkGeneration,
     this.radioType,
     required this.networkOperatorName,
+    this.simSlotIndex,
+    this.networkOperator,
+    this.isNetworkRoaming,
+    this.simCarrierId,
+    this.simCarrierIdName,
+    this.signalLevel,
+    this.signalDbm,
+    this.displayNetworkType,
+    this.isUsingNonTerrestrialNetwork,
   });
 
   TelephonyInfo copyWith({
@@ -335,6 +377,15 @@ class TelephonyInfo {
     String? networkGeneration,
     String? radioType,
     String? networkOperatorName,
+    int? simSlotIndex,
+    String? networkOperator,
+    bool? isNetworkRoaming,
+    int? simCarrierId,
+    String? simCarrierIdName,
+    int? signalLevel,
+    int? signalDbm,
+    String? displayNetworkType,
+    bool? isUsingNonTerrestrialNetwork,
   }) {
     return TelephonyInfo(
       networkCountryIso: networkCountryIso ?? this.networkCountryIso,
@@ -350,6 +401,15 @@ class TelephonyInfo {
       networkGeneration: networkGeneration ?? this.networkGeneration,
       radioType: radioType ?? this.radioType,
       networkOperatorName: networkOperatorName ?? this.networkOperatorName,
+      simSlotIndex: simSlotIndex ?? this.simSlotIndex,
+      networkOperator: networkOperator ?? this.networkOperator,
+      isNetworkRoaming: isNetworkRoaming ?? this.isNetworkRoaming,
+      simCarrierId: simCarrierId ?? this.simCarrierId,
+      simCarrierIdName: simCarrierIdName ?? this.simCarrierIdName,
+      signalLevel: signalLevel ?? this.signalLevel,
+      signalDbm: signalDbm ?? this.signalDbm,
+      displayNetworkType: displayNetworkType ?? this.displayNetworkType,
+      isUsingNonTerrestrialNetwork: isUsingNonTerrestrialNetwork ?? this.isUsingNonTerrestrialNetwork,
     );
   }
 
@@ -368,6 +428,15 @@ class TelephonyInfo {
       'networkGeneration': networkGeneration,
       'radioType': radioType,
       'networkOperatorName': networkOperatorName,
+      'simSlotIndex': simSlotIndex,
+      'networkOperator': networkOperator,
+      'isNetworkRoaming': isNetworkRoaming,
+      'simCarrierId': simCarrierId,
+      'simCarrierIdName': simCarrierIdName,
+      'signalLevel': signalLevel,
+      'signalDbm': signalDbm,
+      'displayNetworkType': displayNetworkType,
+      'isUsingNonTerrestrialNetwork': isUsingNonTerrestrialNetwork,
     };
   }
 
@@ -386,6 +455,15 @@ class TelephonyInfo {
       networkGeneration: map['networkGeneration'] ?? '',
       radioType: map['radioType'],
       networkOperatorName: map['networkOperatorName'] ?? '',
+      simSlotIndex: map['simSlotIndex'],
+      networkOperator: map['networkOperator'],
+      isNetworkRoaming: map['isNetworkRoaming'],
+      simCarrierId: map['simCarrierId'],
+      simCarrierIdName: map['simCarrierIdName'],
+      signalLevel: map['signalLevel'],
+      signalDbm: map['signalDbm'],
+      displayNetworkType: map['displayNetworkType'],
+      isUsingNonTerrestrialNetwork: map['isUsingNonTerrestrialNetwork'],
     );
   }
 
@@ -396,7 +474,7 @@ class TelephonyInfo {
 
   @override
   String toString() {
-    return 'TelephonyInfo(networkCountryIso: $networkCountryIso, mobileCountryCode: $mobileCountryCode, mobileNetworkCode: $mobileNetworkCode, displayName: $displayName, simState: $simState, isoCountryCode: $isoCountryCode, cellId: $cellId, phoneNumber: $phoneNumber, carrierName: $carrierName, subscriptionId: $subscriptionId, networkGeneration: $networkGeneration, radioType: $radioType, networkOperatorName: $networkOperatorName)';
+    return 'TelephonyInfo(networkCountryIso: $networkCountryIso, mobileCountryCode: $mobileCountryCode, mobileNetworkCode: $mobileNetworkCode, displayName: $displayName, simState: $simState, isoCountryCode: $isoCountryCode, cellId: $cellId, phoneNumber: $phoneNumber, carrierName: $carrierName, subscriptionId: $subscriptionId, networkGeneration: $networkGeneration, radioType: $radioType, networkOperatorName: $networkOperatorName, simSlotIndex: $simSlotIndex, networkOperator: $networkOperator, isNetworkRoaming: $isNetworkRoaming, simCarrierId: $simCarrierId, simCarrierIdName: $simCarrierIdName, signalLevel: $signalLevel, signalDbm: $signalDbm, displayNetworkType: $displayNetworkType, isUsingNonTerrestrialNetwork: $isUsingNonTerrestrialNetwork)';
   }
 
   @override
@@ -416,7 +494,16 @@ class TelephonyInfo {
         other.subscriptionId == subscriptionId &&
         other.networkGeneration == networkGeneration &&
         other.radioType == radioType &&
-        other.networkOperatorName == networkOperatorName;
+        other.networkOperatorName == networkOperatorName &&
+        other.simSlotIndex == simSlotIndex &&
+        other.networkOperator == networkOperator &&
+        other.isNetworkRoaming == isNetworkRoaming &&
+        other.simCarrierId == simCarrierId &&
+        other.simCarrierIdName == simCarrierIdName &&
+        other.signalLevel == signalLevel &&
+        other.signalDbm == signalDbm &&
+        other.displayNetworkType == displayNetworkType &&
+        other.isUsingNonTerrestrialNetwork == isUsingNonTerrestrialNetwork;
   }
 
   @override
@@ -433,7 +520,16 @@ class TelephonyInfo {
         subscriptionId.hashCode ^
         networkGeneration.hashCode ^
         radioType.hashCode ^
-        networkOperatorName.hashCode;
+        networkOperatorName.hashCode ^
+        simSlotIndex.hashCode ^
+        networkOperator.hashCode ^
+        isNetworkRoaming.hashCode ^
+        simCarrierId.hashCode ^
+        simCarrierIdName.hashCode ^
+        signalLevel.hashCode ^
+        signalDbm.hashCode ^
+        displayNetworkType.hashCode ^
+        isUsingNonTerrestrialNetwork.hashCode;
   }
 }
 

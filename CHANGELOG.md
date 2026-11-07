@@ -1,4 +1,23 @@
 
+## 4.0.0
+* **BREAKING CHANGE**: Require Flutter 3.44, Dart 3.12, Android 7.0 (API 24) and iOS 13
+* **BREAKING CHANGE**: Talk to the platform through Pigeon instead of the `plugins.chizi.tech/carrier_info` method channel. Public models and defaults are unchanged, but tests that mocked the old channel need to mock the Pigeon channels
+* Migrate the Android plugin to built-in Kotlin, so apps can build on Android Gradle Plugin 9 (fixes #47)
+* Support Swift Package Manager on iOS. CocoaPods keeps working
+* Add `CarrierInfo.getSummary()`, which returns the carrier details both platforms report
+* Android: report `5G` on 5G NSA networks, and add `displayNetworkType`, `signalLevel`, `signalDbm`, `simCarrierId`, `simCarrierIdName`, `networkOperator`, `isNetworkRoaming`, `simSlotIndex` and `isUsingNonTerrestrialNetwork` to `TelephonyInfo`
+* Android: add `activeDataSubscriptionId` and `isEsimEnabled` to `AndroidCarrierData`, and `portIndex` to `SubscriptionsInfo`
+* Android: read each SIM through its own subscription on dual-SIM phones
+* Android: a missing permission now empties only the fields that need it instead of failing the whole call
+* Android: return empty `mobileCountryCode` and `mobileNetworkCode` instead of failing when no SIM is present
+* Android: remove the permission-result listener, so host apps keep their own permission results after a configuration change
+* iOS: add `dataServiceIdentifier` and `cellularDataRestriction` to `IosCarrierData`, and `isExpensive`, `isConstrained` and `usesCellular` to `NetworkStatus`
+* iOS: fill the top-level `supportsEmbeddedSIM` field, which was never set. Apple only returns `true` to carrier apps with the carrier entitlement
+* iOS: remove a debug print that ran at startup on iOS 16+
+* Parse a missing `subscriptionsInfo` or `telephonyInfo` list as empty instead of throwing
+* Add tests for the models, the Pigeon bridge and the summary
+* Add `flutter_lints` and fix the example app's broken widget test
+
 ## 3.0.3
 * **NEW FEATURES**: Enhanced iOS implementation with comprehensive CoreTelephony data
 * Add `isSIMInserted` detection for all iOS versions

@@ -42,7 +42,7 @@ class _MyAppState extends State<MyApp> {
       if (Platform.isAndroid) androidInfo = await CarrierInfo.getAndroidInfo();
       if (Platform.isIOS) iosInfo = await CarrierInfo.getIosInfo();
     } catch (e) {
-      print('Error getting carrier info: $e');
+      debugPrint('Error getting carrier info: $e');
     }
 
     // If the widget was removed from the tree while the asynchronous platform
@@ -209,6 +209,26 @@ class IosUI extends StatelessWidget {
             value: (iosInfo?.networkStatus?.technologies?.isNotEmpty ?? false)
                 ? iosInfo!.networkStatus!.technologies!.join(', ')
                 : 'None',
+          ),
+          HomeItem(
+            title: 'Expensive (cellular or hotspot)',
+            value: '${iosInfo?.networkStatus?.isExpensive ?? 'Unknown'}',
+          ),
+          HomeItem(
+            title: 'Low Data Mode',
+            value: '${iosInfo?.networkStatus?.isConstrained ?? 'Unknown'}',
+          ),
+          HomeItem(
+            title: 'Uses Cellular',
+            value: '${iosInfo?.networkStatus?.usesCellular ?? 'Unknown'}',
+          ),
+          HomeItem(
+            title: 'Data SIM',
+            value: iosInfo?.dataServiceIdentifier ?? 'Unknown',
+          ),
+          HomeItem(
+            title: 'Cellular Data for This App',
+            value: iosInfo?.cellularDataRestriction ?? 'Unknown',
           ),
         ],
 
@@ -459,6 +479,14 @@ class AndroidUI extends StatelessWidget {
             HomeItem(
               title: 'isDataEnabled',
               value: '${androidInfo?.isDataEnabled ?? false}',
+            ),
+            HomeItem(
+              title: 'activeDataSubscriptionId',
+              value: '${androidInfo?.activeDataSubscriptionId ?? 'Unknown'}',
+            ),
+            HomeItem(
+              title: 'isEsimEnabled',
+              value: '${androidInfo?.isEsimEnabled ?? 'Unknown'}',
             ),
             ...(androidInfo?.telephonyInfo ?? []).map((it) {
               return Padding(
