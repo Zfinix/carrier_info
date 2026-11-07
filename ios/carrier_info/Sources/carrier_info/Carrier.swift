@@ -56,7 +56,10 @@ final class Carrier: IosCarrierApi {
 
         return IosCarrierMessage(
             carrierData: carrierData,
-            carrierRadioAccessTechnologyTypeList: radioAccessTechnologies(currentTechnologies),
+            carrierRadioAccessTechnologyTypeList: radioAccessTechnologies(
+                currentTechnologies,
+                dataService: networkInfo.dataServiceIdentifier
+            ),
             isSIMInserted: isSIMInserted(currentTechnologies),
             supportsEmbeddedSIM: supportsEmbeddedSIM,
             subscriberInfo: subscriberInfo,
@@ -96,9 +99,11 @@ final class Carrier: IosCarrierApi {
         }
     }
 
-    private func radioAccessTechnologies(_ technologies: [String: String]?) -> [String] {
+    /// Lists the data service first, so the summary reports the network carrying mobile data.
+    private func radioAccessTechnologies(_ technologies: [String: String]?, dataService: String?) -> [String] {
         let prefix = "CTRadioAccessTechnology"
-        return (technologies ?? [:]).values.map { technology in
+        let ordered = (technologies ?? [:]).sorted { lhs, rhs in lhs.key == dataService && rhs.key != dataService }
+        return ordered.map(\.value).map { technology in
             if technology.hasPrefix(prefix) {
                 return String(technology.dropFirst(prefix.count))
             }

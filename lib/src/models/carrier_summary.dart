@@ -71,7 +71,10 @@ class CarrierSummary {
 
   factory CarrierSummary.fromAndroid(AndroidCarrierData data) {
     final inserted = data.telephonyInfo
-        .where((t) => t.simState.isNotEmpty && t.simState != 'SIM_STATE_ABSENT')
+        .where((t) =>
+            t.simState.isNotEmpty &&
+            t.simState != 'SIM_STATE_ABSENT' &&
+            (t.simState != 'SIM_STATE_UNKNOWN' || t.mobileCountryCode.isNotEmpty))
         .toList();
     final dataSim = inserted.where(
       (t) => t.subscriptionId == data.activeDataSubscriptionId,
@@ -159,7 +162,7 @@ class CarrierSummary {
 
   @override
   int get hashCode {
-    return sims.hashCode ^
+    return Object.hashAll(sims) ^
         isSimInserted.hashCode ^
         supportsEmbeddedSim.hashCode ^
         networkGeneration.hashCode ^

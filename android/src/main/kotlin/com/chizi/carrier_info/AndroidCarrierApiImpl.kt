@@ -74,9 +74,15 @@ internal class AndroidCarrierApiImpl(private val context: Context) : AndroidCarr
     private fun subscription(info: SubscriptionInfo): AndroidSubscriptionMessage {
         val q = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q
         return AndroidSubscriptionMessage(
-            mobileCountryCode = field { if (q) info.mccString else null },
+            mobileCountryCode = field {
+                @Suppress("DEPRECATION")
+                if (q) info.mccString else info.mcc.takeIf { it > 0 }?.toString()
+            },
             isOpportunistic = field { if (q) info.isOpportunistic else null },
-            mobileNetworkCode = field { if (q) info.mncString else null },
+            mobileNetworkCode = field {
+                @Suppress("DEPRECATION")
+                if (q) info.mncString else info.mnc.takeIf { it >= 0 }?.toString()?.padStart(2, '0')
+            },
             displayName = field { info.displayName?.toString() },
             isNetworkRoaming = field { subscriptionManager?.isNetworkRoaming(info.subscriptionId) },
             simSlotIndex = field { info.simSlotIndex.toLong() },
@@ -91,7 +97,7 @@ internal class AndroidCarrierApiImpl(private val context: Context) : AndroidCarr
             countryIso = field { info.countryIso },
             subscriptionType = field { if (q) info.subscriptionType.toLong() else null },
             cardId = field { if (q) info.cardId.toLong() else null },
-            isEmbedded = field { if (q) info.isEmbedded else null },
+            isEmbedded = field { if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) info.isEmbedded else null },
             carrierId = field { if (q) info.carrierId.toLong() else null },
             subscriptionId = field { info.subscriptionId.toLong() },
             simSerialNo = field {
@@ -117,6 +123,17 @@ internal class AndroidCarrierApiImpl(private val context: Context) : AndroidCarr
                 null
             }
         }?.takeIf { it != SubscriptionManager.INVALID_SUBSCRIPTION_ID }
+        if (subscriptionId == null && slot > 0) {
+            return AndroidTelephonyMessage(
+                simSlotIndex = slot.toLong(),
+                networkCountryIso = field {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) defaultTm.getNetworkCountryIso(slot) else null
+                },
+                simState = field {
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) simState(defaultTm.getSimState(slot)) else null
+                },
+            )
+        }
         val tm = subscriptionId?.let { id -> field { defaultTm.createForSubscriptionId(id) } } ?: defaultTm
         val simOperator = field { tm.simOperator }
         val displayNetworkType = displayNetworkType(tm)

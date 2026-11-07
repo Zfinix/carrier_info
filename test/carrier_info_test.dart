@@ -354,6 +354,27 @@ void main() {
       );
     });
 
+    test('Android skips a slot in an unknown state with no carrier', () {
+      final summary = CarrierSummary.fromAndroid(AndroidCarrierData.fromMap({
+        'telephonyInfo': [
+          {'simState': 'SIM_STATE_UNKNOWN'},
+          {'simState': 'SIM_STATE_UNKNOWN', 'mobileCountryCode': '310'},
+        ],
+      }));
+
+      expect(summary.sims, const [SimCarrier(mobileCountryCode: '310')]);
+    });
+
+    test('equal summaries share a hash code', () {
+      CarrierSummary build() => CarrierSummary(
+            sims: [const SimCarrier(carrierName: 'O2')],
+            isSimInserted: true,
+            supportsEmbeddedSim: false,
+          );
+
+      expect(build().hashCode, build().hashCode);
+    });
+
     test('iOS maps the radio technology to a generation', () {
       expect(
         CarrierSummary.fromIos(IosCarrierData.fromMap(_legacyIosMap)),
