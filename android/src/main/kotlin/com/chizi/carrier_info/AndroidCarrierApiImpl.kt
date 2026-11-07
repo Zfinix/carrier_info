@@ -110,7 +110,14 @@ internal class AndroidCarrierApiImpl(private val context: Context) : AndroidCarr
         slot: Int,
         info: SubscriptionInfo?,
     ): AndroidTelephonyMessage {
-        val tm = info?.let { sub -> field { defaultTm.createForSubscriptionId(sub.subscriptionId) } } ?: defaultTm
+        val subscriptionId = info?.subscriptionId ?: field {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+                SubscriptionManager.getSubscriptionId(slot)
+            } else {
+                null
+            }
+        }?.takeIf { it != SubscriptionManager.INVALID_SUBSCRIPTION_ID }
+        val tm = subscriptionId?.let { id -> field { defaultTm.createForSubscriptionId(id) } } ?: defaultTm
         val simOperator = field { tm.simOperator }
         val displayNetworkType = displayNetworkType(tm)
         val networkGeneration = when (displayNetworkType) {
@@ -142,7 +149,7 @@ internal class AndroidCarrierApiImpl(private val context: Context) : AndroidCarr
                 tm.line1Number
             },
             carrierName = field { tm.simOperatorName },
-            subscriptionId = info?.subscriptionId?.toLong(),
+            subscriptionId = subscriptionId?.toLong(),
             networkGeneration = networkGeneration,
             radioType = field { radioType(tm.dataNetworkType) },
             networkOperatorName = field { tm.networkOperatorName },
